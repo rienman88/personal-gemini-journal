@@ -233,14 +233,14 @@ Evaluate this repository against **Authenticity, Usability, Stability, and Secur
 ## Navigation
 
 - [README.md](README.md) - project overview and quick start
-- [HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) - user-facing behavior and failure modes
-- [IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) - Firebase, Secret Manager, Cloud Run, App Check, scheduler, and submission steps
-- [SELF_DEPLOYMENT_GUIDE.md](docs/SELF_DEPLOYMENT_GUIDE.md) - implementation-specific deploy-from-scratch workflow, verification, rollback, alternatives, and resolved issues
-- [TECHNICAL_WRITEUP.md](docs/TECHNICAL_WRITEUP.md) - implementation rationale and deeper engineering detail
-- [DOCKER_DEPLOYMENT_RUNBOOK.md](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) - actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log
-- [CLOUD_IMPLEMENTATION_RUNBOOK.md](docs/CLOUD_IMPLEMENTATION_RUNBOOK.md) - actual Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error, rotation, and verification record
-- [GITHUB_PUBLICATION_CHECKLIST.md](docs/GITHUB_PUBLICATION_CHECKLIST.md) - repository publication boundary, credential scan, dry run, included manifest, and GitHub controls
-- [CONSTITUTION.md](docs/CONSTITUTION.md) - Google AI Studio security instructions
-- [OWASP_LLM_TOP10_COVERAGE.md](docs/OWASP_LLM_TOP10_COVERAGE.md) - LLM threat coverage and limits
-- [TEST_RESULTS.md](docs/TEST_RESULTS.md) - manual and automated evidence
-- [USABILITY_CHECKLIST.md](docs/USABILITY_CHECKLIST.md) - usability walkthrough and production checks
+- [HOW_IT_WORKS.md](HOW_IT_WORKS.md) - user-facing behavior and failure modes
+- [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Firebase, Secret Manager, Cloud Run, App Check, scheduler, and submission steps
+- [SELF_DEPLOYMENT_GUIDE.md](SELF_DEPLOYMENT_GUIDE.md) - implementation-specific deploy-from-scratch workflow, verification, rollback, alternatives, and resolved issues
+- [TECHNICAL_WRITEUP.md](TECHNICAL_WRITEUP.md) - implementation rationale and deeper engineering detail
+- [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) - actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log
+- [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) - actual Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error, rotation, and verification record
+- [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md) - repository publication boundary, credential scan, dry run, included manifest, and GitHub controls
+- [CONSTITUTION.md](CONSTITUTION.md) - Google AI Studio security instructions
+- [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) - LLM threat coverage and limits
+- [TEST_RESULTS.md](TEST_RESULTS.md) - manual and automated evidence
+- [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md) - usability walkthrough and production checks
