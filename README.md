@@ -1,6 +1,26 @@
+# Quick-Reference
+
+| Requirement | Location |
+|---|---|
+| Canonical URL | https://personal-gemini-journal-eazyegerma-as.a.run.app |
+| Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
+| Demonstration video | [Linkedin]() |
+| Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
+| What is Personal Gemini Journal | [`How it works?`](HOW_IT_WORKS.md) |
+| AI Studio Build | [`Special Instructions`](CONSTITUTION.md) | 
+| Docker | [`Docker Deployment`](DOCKER_DEPLOYMENT_RUNBOOK.md) |
+| Implementation | [`IMPLEMENTATION GUIDE`](IMPLEMENTATION_GUIDE.md) |
+| Usuability checklist | [`Useability test`](USABILITY_CHECKLIST.md) |
+| OWASP Top 10 LLM Coverage | [`OWASP Coverage`](OWASP_LLM_TOP10_COVERAGE.md) |
+| Technical reviewer | [`TECHNICAL WRITE-UP`](TECHNICAL_WRITEUP.md) |
+| Manual Verification Checklist | [`TEST RESULTS`](TEST_RESULTS.md) |
+
+
 # Personal Gemini Journal
 
-Personal Gemini Journal is a user-authenticated journaling application built for the [Google Cloud Gen AI Academy APAC Edition, Cohort 3](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage) ideathon, focused on Accelerate AI with Cloud Run. It combines Google Sign-In, Gemini-assisted reflection, private Firestore storage, and deterministic privacy and integrity controls.
+Personal Gemini Journal is a user-authenticated journaling application built for the [Google Cloud Gen AI Academy APAC Edition, Cohort 3 ideathon](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage), focused on Accelerate AI with Cloud Run. 
+
+It combines Google Sign-In, Gemini-assisted reflection, private Firestore storage, and deterministic privacy and integrity controls.
 
 The central design rule is simple: **Gemini interprets journal content, but it never decides authorization, privacy policy, or what gets persisted.**
 
@@ -242,10 +262,7 @@ Firestore Security Rules isolate ordinary authenticated users from one another, 
 - `OWASP_LLM_TOP10_COVERAGE.md` records actual LLM security coverage and limits.
 - `USABILITY_CHECKLIST.md` tracks manual usability work and browser smoke coverage.
 - `SELF_DEPLOYMENT_GUIDE.md` is the implementation-specific deploy-from-scratch guide, including imported Academy steps, alternatives, verification, rollback, and resolved deployment issues.
-- `GITHUB_PUBLICATION_CHECKLIST.md` is the repository-specific GitHub/GitLab publication boundary, secret audit, dry run, and post-publication control checklist.
-- `GITHUB_WEB_PUBLICATION_GUIDE.md` is the web-first public GitHub upload, verification, editing, deletion, and post-edit release workflow.
 - `TEST_RESULTS.md` records the original nine-step manual verification checklist, the expanded feature-by-feature manual test matrix, and system execution evidence.
-- `VIDEO_SUBMISSION_SCRIPT.md` is the current word-for-word Hack2Skill video script, safe demo data, evidence sequence, security wording, and recording checklist.
 - `scripts/provision-cloud-run.ps1` provisions the production Cloud Run identity, App Check build/runtime settings, secrets, label, and retention scheduler.
 - `DOCKER_DEPLOYMENT_RUNBOOK.md` records the actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log.
 - `CLOUD_IMPLEMENTATION_RUNBOOK.md` records the actual Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, errors, rotations, and live verification state.
