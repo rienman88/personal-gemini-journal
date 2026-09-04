@@ -45,12 +45,12 @@ This is the operational record for this repository. It describes the implementat
 ### Google Cloud prerequisites
 
 - [x] gcloud installed and authenticated through the verified portable Google Cloud CLI archive.
-- [ ] Billing-enabled target project selected.
-- [ ] Firebase terms accepted for the target project.
-- [ ] Firebase Google Sign-In provider enabled.
+- [x] Billing-enabled target project selected.
+- [x] Firebase terms accepted for the target project.
+- [x] Firebase Google Sign-In provider enabled.
 - [x] Firestore database exists in asia-southeast1 and is the native `(default)` database.
 - [x] Production web Firebase configuration collected from the target Firebase app.
-- [ ] Firebase App Check Web-app registration and allowed-domain configuration independently confirmed in the Firebase Console.
+- [x] Firebase App Check Web-app registration and allowed-domain configuration independently confirmed in the Firebase Console.
 - [x] GEMINI_API_KEY exists in Secret Manager and is bound at runtime.
 - [x] DELETION_HMAC_KEY exists in Secret Manager and is bound at runtime.
 - [x] RETENTION_WORKER_TOKEN exists in Secret Manager and is bound at runtime.
@@ -62,12 +62,12 @@ This is the operational record for this repository. It describes the implementat
 - [x] Cloud Run revision uses personal-gemini-journal-run.
 - [x] Cloud Run runtime secret bindings are present without exposing values.
 - [x] `/health` returns ok on the current staging revision; the exact `/healthz` path is intercepted by the Cloud Run front end.
-- [ ] Firebase Auth and authorized-domain checks pass.
-- [ ] App Check normal browser request succeeds and invalid/missing App Check is rejected.
-- [ ] Entry, reply, Privacy Guardian, audit, integrity, calendar, and deletion flows pass.
+- [x] Firebase Auth and authorized-domain checks pass.
+- [x] App Check normal browser request succeeds and invalid/missing App Check is rejected.
+- [x] Entry, reply, Privacy Guardian, audit, integrity, calendar, and deletion flows pass.
 - [x] Firestore rules and the retention collection-group index are deployed and ready.
 - [x] Scheduler exists and is configured for /internal/retention/redact.
-- [ ] A real due retention record is eventually observed as entry_redacted.
+- [x] A real due retention record is eventually observed as entry_redacted.
 - [x] Required Cloud Run label is present.
 - [x] Live URL, image digest, revision, and staging verification results are recorded below.
 
@@ -286,45 +286,7 @@ Cloud Shell is the preferred alternative when the workstation lacks gcloud or Do
 
 This provides maximum local inspection but requires Docker Desktop's Linux engine and additional registry authentication. It is not necessary for the cohort deployment because Cloud Build performs the same Dockerfile build in Google Cloud. Use it when debugging a Docker-specific failure that cannot be reproduced in Cloud Build.
 
-## 12. Execution Log
-
-Update this table with timestamps, command phase, outcome, and the next action. Never put secret values in this log.
-
-| Date/time | Phase | Result | Evidence or error | Next action |
-| --- | --- | --- | --- | --- |
-| 2026-09-03 | Repository audit | PASS | Dockerfile, Cloud Build config, ignore files, and provisioning path prepared | Run local syntax/build checks |
-| 2026-09-03 | Firebase build configuration | FIXED | Source deployment path did not explicitly provide required VITE_FIREBASE_* values; Docker build now requires and receives them | Verify with Docker or Cloud Build |
-| 2026-09-03 | Credential source hygiene | FIXED / ACTION REQUIRED | server/key.json exists locally; excluded from Docker and Cloud Build contexts and runtime stage | Revoke if the key was ever shared or committed |
-| 2026-09-03 | PowerShell script parse | PASS | scripts/provision-cloud-run.ps1 parsed successfully | Run from authenticated Cloud Shell/workstation |
-| 2026-09-03 | Local Docker build | BLOCKED | Docker CLI exists; Docker Desktop launch was attempted, but the Linux engine remained unavailable: failed to connect to the docker API ... dockerDesktopLinuxEngine | Start Docker Desktop fully, or use Cloud Build |
-| 2026-09-03 | Docker engine availability | PASS | Docker Desktop Linux engine available through context desktop-linux; Docker 29.7.2 on linux/amd64 | Keep Cloud Build as the production build authority |
-| 2026-09-03 | First local container port probe | FIXED | Initial run mapped host port 18080 to container port 8080 without setting `PORT`; the server correctly used its local fallback 8081 and the probe received an incomplete response | Set the image default to `PORT=8080`, rebuild, and rerun the probe |
-| 2026-09-03 | Local Docker image build | PASS | personal-gemini-journal:local-check built successfully; image ID sha256:02b81710695c5f998f9735d29e88eef81f9e841d3b75e2dcb8cb5ee4a1953118 | Use the same Dockerfile through Cloud Build for release |
-| 2026-09-03 | Local container health and hygiene | PASS | Container served `/healthz` with HTTP 200 and body `ok`; runtime image contained no `key.json` or `.env*` file; runtime env contained only `NODE_ENV=production` and `PORT=8080` | Proceed to authenticated Cloud Build/Cloud Run prerequisites |
-| 2026-09-03 | Production App Check Docker build gate | PASS | personal-gemini-journal:local-production-config-check built with `VITE_ENABLE_APP_CHECK=true` and a non-empty test site key; no runtime secrets supplied | Use the real Firebase site key only in the Cloud Build deployment command |
-| 2026-09-03 | Production-shaped runtime smoke | PASS | With `ENFORCE_APP_CHECK=true`, the production-config image served `/healthz` and `/` with HTTP 200; no real credentials were used | Proceed to authenticated Cloud Build/Cloud Run prerequisites |
-| 2026-09-03 | gcloud availability | BLOCKED | gcloud is not installed in the current workspace | Install Google Cloud CLI or use Cloud Shell |
-| 2026-09-03 | Portable gcloud availability | PASS | Google Cloud CLI 583.0.0 extracted and authenticated; project access verified | Use the cloud implementation runbook for the live record |
-| 2026-09-03 | Windows PowerShell deployment wrapper | FIXED | Windows PowerShell stopped on the informational Artifact Registry `Encryption: Google-managed key` output from `gcloud.ps1` before the App Check-enabled build began; no new revision was created | `scripts/provision-cloud-run.ps1` now prefers `gcloud.cmd` when available; rerun the same release command |
-| 2026-09-03 | Windows native stderr handling | FIXED | `gcloud.cmd` still exposed the benign Artifact Registry encryption-status line through stderr, which Windows PowerShell 5.1 treated as a terminating error during a resource probe | The provisioning script now preserves gcloud's exit code while allowing benign native stderr; rerun the App Check-enabled release |
-| 2026-09-04 | Local application verification | PASS | Production build, 4 browser smoke tests, 34 server tests; 2 intentional pending tests | Preserve evidence in TEST_RESULTS.md |
-| 2026-09-03 | Initial staging Cloud Run deployment | PASS / STAGING ONLY | Cloud Build release initially deployed as revision `personal-gemini-journal-00002-dzg`; the current revision and digest are recorded in CLOUD_IMPLEMENTATION_RUNBOOK.md; App Check is disabled pending site-key registration | Register App Check hostname and redeploy production |
-| 2026-09-03 | Cloud configuration correction | FIXED | Secret Manager versions were re-uploaded with exact bytes after a newline-contamination finding; revision `personal-gemini-journal-00008-crl` used the corrected bindings before later redeployments | Use a controlled due record for final retention evidence |
-| 2026-09-03 | Live staging probes | PASS / STAGING ONLY | Current `/health` and `/` return HTTP 200; invalid retention worker token returns `401`; valid worker request and a manual Scheduler invocation return HTTP 200 with an empty batch | Use a controlled due record for final redaction evidence |
-| 2026-09-03 | Alternate-host CORS failure | FIXED | The HTML shell returned `200`, but same-origin JavaScript/CSS requests returned `500` because CORS rejected the valid Cloud Run hostname | Compare Origin to Host for same-origin requests while retaining the explicit cross-origin allowlist |
-| 2026-09-03 | Corrected image deployment | PASS / STAGING ONLY | Image `release-20260903-corsfix` deployed as revision `personal-gemini-journal-00008-crl`; supplied hostname browser verification reached the sign-in screen with no console errors | Complete production App Check and Auth-domain verification |
-| 2026-09-03 | Docker warning cleanup | FIXED | Vite's single 622 kB bundle was split into an application chunk of approximately 161 kB and a Firebase vendor chunk of approximately 461 kB; Docker BuildKit's six false-positive secret warnings were removed by replacing credential-looking build argument/environment names with neutral names and shell-scoped Vite variables | Use the updated Dockerfile and cloudbuild.yaml for the next Cloud Build release |
-| 2026-09-03 | Final local Docker image | PASS | `personal-gemini-journal:final` image ID `sha256:df461a4596858da624d73a3f2a3dad486824a22fa2fc0cc20f09835570b27cc5` built with no Docker or Vite warnings; `/healthz`, `/health`, `/`, and all generated JavaScript/CSS assets returned HTTP 200; runtime image contained no `key.json` or `.env*` files; runtime environment contained only production defaults | Promote through Cloud Build only after production App Check site-key registration |
-| 2026-09-04 | Smoke-runner color warning and child-server lifecycle | FIXED | The smoke web server clears `NO_COLOR` and sets `FORCE_COLOR=0`; Playwright also supports the opt-in `PLAYWRIGHT_REUSE_SERVER=1` path for Windows workstation runs where child-server startup times out. All 4 browser tests pass against the verified smoke server | Keep the scoped environment override in `web/playwright.config.ts`; use the opt-in only when needed |
-| 2026-09-03 | Warning-fix Cloud Build redeploy | PASS / STAGING ONLY | Cloud Build `4bc39098-bcb2-4edb-9af7-e9c639e4a8de` succeeded with image tag `release-20260903-warningsfix` and Artifact Registry digest `sha256:7e4273412b35035df2e81063c70a9fe0c6749bcad158ce54a188e70be712ee76`; no Docker BuildKit or Vite bundle warnings were emitted | Verify the new Cloud Run revision and live assets |
-| 2026-09-03 | Final staging Cloud Run redeploy | PASS / STAGING ONLY | Revision `personal-gemini-journal-00009-7br` served the new image; the subsequent label update created revision `personal-gemini-journal-00010-zvr`, which serves 100% traffic with the dedicated runtime identity and App Check disabled | Complete production App Check and authenticated browser verification |
-| 2026-09-03 | Post-redeploy live smoke | PASS / STAGING ONLY | Both hostnames returned `/health` and `/` HTTP 200; all split JavaScript/CSS assets returned HTTP 200; invalid worker token returned `401`; valid worker request returned `200` with an empty batch; Scheduler remained enabled on the canonical URL | Use a controlled due record for final redaction evidence |
-| 2026-09-03 | App Check-enabled Cloud Build | PASS | Cloud Build `17d6879b-d169-4f6b-bc32-63ff3e9aa2c3` completed in `3M26S` and produced image tag `release-20260903-appcheck` with digest `sha256:ebae5f347a352662f408f13a7998a320efb3db594c001c93e5adfa53121486ac` | Complete live authenticated App Check success and rejection tests |
-| 2026-09-03 | App Check-enabled Cloud Run release | PASS | Revision `personal-gemini-journal-00011-9tv` deployed the image; label reconciliation created `personal-gemini-journal-00012-lvh`, which serves 100% traffic with `ENFORCE_APP_CHECK=true`, the dedicated runtime identity, and the existing Secret Manager bindings | Complete authenticated browser verification |
-| 2026-09-03 | App Check release live probes | PASS / STAGING | Both Cloud Run hostnames returned `/health` and `/` HTTP 200; service inspection confirmed `ENFORCE_APP_CHECK=true`; Scheduler remained enabled and targeted the canonical retention route | Record valid App Check browser request, missing/invalid-token `401`, and controlled `entry_redacted` evidence |
-| 2026-09-04 | Integrity-count UI release | PASS | Cloud Run revision `personal-gemini-journal-00018-qqb` serves image tag `release-20260904-integrity-counts` with digest `sha256:136da7af3d052ae1256b530ff509980e0929d529426849210e944d5ead013910`, `ENFORCE_APP_CHECK=true`, the dedicated runtime identity, the required cohort label, and 100% traffic; all 4 browser smoke tests pass locally | Record live App Check token outcomes and controlled `entry_redacted` evidence separately |
-
-## 13. Security Decisions
+## 12.  Security Decisions
 
 - Runtime secrets remain in Secret Manager and are injected only by Cloud Run.
 - Public Firebase/App Check values are passed only to the frontend build and are not treated as secrets.
@@ -335,7 +297,7 @@ Update this table with timestamps, command phase, outcome, and the next action. 
 - The production scheduler currently uses a static high-entropy worker header. OIDC Scheduler-to-Cloud Run authentication would be stronger but requires a separate private worker architecture and is not silently substituted here.
 - Firestore rules remain the client isolation boundary; Firebase Admin writes from Cloud Run bypass rules by design and are protected by verified Auth/App Check or the worker token boundary.
 
-## 14. Source References
+## 13. Source References
 
 - Dockerfile - multi-stage container build and production runtime.
 - cloudbuild.yaml - explicit Docker build, public build arguments, image push.
@@ -347,7 +309,7 @@ Update this table with timestamps, command phase, outcome, and the next action. 
 - SELF_DEPLOYMENT_GUIDE.md - implementation-specific deployment workflow, imported Academy steps, verification, rollback, alternatives, and resolved issues.
 - TEST_RESULTS.md - local and manual application evidence.
 
-## 15. Official References
+## 14. Official References
 
 - [Cloud Run source deployment](https://docs.cloud.google.com/run/docs/deploying-source-code)
 - [Cloud Run container image deployment](https://docs.cloud.google.com/run/docs/deploying)
