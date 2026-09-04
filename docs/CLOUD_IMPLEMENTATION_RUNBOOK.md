@@ -1,6 +1,6 @@
 # Cloud Implementation Runbook
 
-The current implementation topology is shown in [docs/ARCHITECTURE.svg](docs/ARCHITECTURE.svg). Use it together with this runbook to distinguish Firebase browser configuration, Cloud Run runtime configuration, Secret Manager values, Firestore rules, and the private Scheduler retention path.
+The current implementation topology is shown in [docs/ARCHITECTURE.svg](ARCHITECTURE.svg). Use it together with this runbook to distinguish Firebase browser configuration, Cloud Run runtime configuration, Secret Manager values, Firestore rules, and the private Scheduler retention path.
 
 **Application:** Personal Gemini Journal  
 **Programme:** Google Cloud Gen AI Academy APAC Edition, Cohort 3  
@@ -62,7 +62,7 @@ This is the actual deployment record for this repository, not a generic tutorial
 - [x] Scheduler job `personal-gemini-journal-retention` created or updated.
 - [x] Scheduler calls `/internal/retention/redact` with the protected worker token.
 - [x] `/health` returns HTTP 200 on the current staging revision.
-- [ ] Live Google Sign-In succeeds.
+- [x] Live Google Sign-In succeeds.
 - [ ] Live App Check succeeds for ordinary requests and rejects missing/invalid App Check when enforced.
 - [ ] Entry, reply, Privacy Guardian, audit, integrity, calendar, and deletion flows pass.
 - [ ] Deleted entries disappear from the UI while audit records remain.
