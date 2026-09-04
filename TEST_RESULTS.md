@@ -1,4 +1,4 @@
-# Manual Verification Checklist & Sample Execution Log
+# Manual Verification Checklist
 
 ## Scope
 
