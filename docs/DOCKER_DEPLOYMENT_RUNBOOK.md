@@ -1,6 +1,6 @@
 # Docker Deployment Runbook
 
-The container and service boundary are shown in [docs/ARCHITECTURE.svg](docs/ARCHITECTURE.svg). The image contains the built React frontend and compiled Express server; production Gemini and retention credentials are injected only at Cloud Run runtime from Secret Manager.
+The container and service boundary are shown in [docs/ARCHITECTURE.svg](ARCHITECTURE.svg). The image contains the built React frontend and compiled Express server; production Gemini and retention credentials are injected only at Cloud Run runtime from Secret Manager.
 
 **Application:** Personal Gemini Journal  
 **Programme:** Google Cloud Gen AI Academy APAC Edition, Cohort 3  
