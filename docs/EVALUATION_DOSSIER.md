@@ -64,7 +64,7 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 
 ## Architecture and trust boundaries
 
-![Personal Gemini Journal architecture](docs/ARCHITECTURE.svg)
+![Personal Gemini Journal architecture](ARCHITECTURE.svg)
 
 The diagram is versioned with the application and reflects the actual source and deployment boundaries. It is a visual companion to the trust-boundary description below, not a proposed future architecture.
 
