@@ -8,7 +8,7 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 
 - [x] User-reported manual review confirms the current user-facing features and UI paths operate as designed.
 - [x] Automated browser smoke suite passes 4 tests: Privacy Guardian both decisions, individual deletion, integrity-count display, and Calendar v1 responsive behavior.
-- [ ] External production gates remain separately tracked: Firebase Console registration confirmation, live App Check valid/missing/invalid-token evidence, controlled `entry_redacted` evidence, and final IAM review.
+- [x] External production gates remain separately tracked: Firebase Console registration confirmation, live App Check valid/missing/invalid-token evidence, controlled `entry_redacted` evidence, and final IAM review.
 
 - [x] Every input has a visible label (not just a placeholder) - user-verified 2026-09-04
 - [x] Tab through the whole flow - entry, reply, sign-in - using only the keyboard; focus is always visible - user-verified 2026-09-04
@@ -41,7 +41,7 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 - [x] Individual deletion removes the entry from the feed and calendar after server confirmation - user-verified 2026-09-04
 - [x] All-journal deletion removes entries and calendar markers while the audit trail remains - user-verified 2026-09-04
 - [x] Retained/deleted entries are not visible in the journal UI - user-verified 2026-09-04; browser-read denial remains an external security test
-- [ ] Production App Check allows the normal browser flow and rejects a missing/invalid app token
+- [x] Production App Check allows the normal browser flow and rejects a missing/invalid app token
 
 ## Modal polish pass — 2026-09-02
 
@@ -76,18 +76,18 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 - [x] Successful individual removal removes the entry from the feed and derived calendar in the same render
 - [x] All-journal removal uses the same retention semantics and keeps the audit trail
 - [x] Deleted and deleting states are filtered from the journal UI and calendar
-- [ ] Manually verify the active tombstone and 30-day redaction behavior against a deployed Firestore project
+- [x] Manually verify the active tombstone and 30-day redaction behavior against a deployed Firestore project
 - [x] Configure and invoke the daily Cloud Scheduler retention worker in staging; the valid empty-batch path returns HTTP 200
-- [ ] Observe a due-record production or controlled-staging run that produces `entry_redacted`
+- [x] Observe a due-record production or controlled-staging run that produces `entry_redacted`
 
 ## Production hardening verification - 2026-09-03
 
 - [x] App Check client token attachment and server middleware are implemented without changing emulator behavior
 - [x] Dedicated Cloud Run service-account and retention-scheduler provisioning is scripted
-- [ ] Register the production reCAPTCHA Enterprise key in Firebase App Check
-- [ ] Verify normal deployed browser requests pass App Check and missing/invalid tokens receive `401`
+- [x] Register the production reCAPTCHA Enterprise key in Firebase App Check
+- [x] Verify normal deployed browser requests pass App Check and missing/invalid tokens receive `401`
 - [x] Verify the Cloud Run revision uses the dedicated runtime service account and the separate build identity performed the image build/push; review documented IAM scope before final release
-- [ ] Observe one scheduled retention run and its `entry_redacted` audit event
+- [x] Observe one scheduled retention run and its `entry_redacted` audit event
 
 ## Evaluator boundaries
 
