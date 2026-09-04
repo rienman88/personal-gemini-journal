@@ -1,4 +1,4 @@
-# Implementation and Submission Guide
+# Implementation Guide
 
 This guide maps the [Google Cloud Gen AI Academy APAC Edition, Cohort 3](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage) ideathon requirements to this repository. The application code is hand-written and locally verified; the Google AI Studio, Firebase Console, Google Cloud, Cloud Run, GitHub/GitLab, social post, and Academy dashboard steps remain external actions.
 
