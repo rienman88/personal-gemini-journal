@@ -1,0 +1,15 @@
+{
+  "name": "personal-gemini-journal",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix web && npm install --prefix server",
+    "build": "npm run build --prefix web && npm run build --prefix server",
+    "start": "node server/lib/src/index.js",
+    "dev:web": "npm run dev --prefix web",
+    "dev:server": "npm run dev --prefix server",
+    "test:smoke": "npm run test:smoke --prefix web"
+  },
+  "dependencies": {
+    "firebase": "^12.18.0"
+  }
+}

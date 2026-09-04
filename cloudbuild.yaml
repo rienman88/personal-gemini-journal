@@ -1,0 +1,33 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - ${_IMAGE_URI}
+      - --build-arg
+      - WEB_CONFIG_A=${_VITE_FIREBASE_API_KEY}
+      - --build-arg
+      - WEB_CONFIG_B=${_VITE_FIREBASE_AUTH_DOMAIN}
+      - --build-arg
+      - WEB_CONFIG_C=${_VITE_FIREBASE_PROJECT_ID}
+      - --build-arg
+      - WEB_CONFIG_D=${_VITE_FIREBASE_STORAGE_BUCKET}
+      - --build-arg
+      - WEB_CONFIG_E=${_VITE_FIREBASE_MESSAGING_SENDER_ID}
+      - --build-arg
+      - WEB_CONFIG_F=${_VITE_FIREBASE_APP_ID}
+      - --build-arg
+      - WEB_CONFIG_G=${_VITE_USE_EMULATORS}
+      - --build-arg
+      - WEB_CONFIG_H=${_VITE_ENABLE_APP_CHECK}
+      - --build-arg
+      - WEB_CONFIG_I=${_VITE_RECAPTCHA_ENTERPRISE_SITE_KEY}
+      - --build-arg
+      - WEB_CONFIG_J=${_VITE_API_BASE_URL}
+      - .
+
+images:
+  - ${_IMAGE_URI}
+
+options:
+  logging: CLOUD_LOGGING_ONLY

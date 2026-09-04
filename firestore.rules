@@ -1,0 +1,74 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function canReadConversation(uid, entryId) {
+      let entry = get(/databases/$(database)/documents/users/$(uid)/entries/$(entryId));
+      return !entry.data.keys().hasAny(["deletionState"])
+        || (entry.data.deletionState != "deleted" && entry.data.deletionState != "deleting");
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false; // no client-writable profile doc yet — loosen deliberately if you add one
+
+      match /entries/{entryId} {
+        // All writes happen through the Express API via the Admin SDK,
+        // which bypasses these rules — clients get read-only access. This
+        // is what makes the hash chain meaningful: a client can never
+        // write a fake entry with a fake hash that still verifies.
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+
+        match /conversation/{turnId} {
+          // Same backend-only-write pattern, one level down — a reply is
+          // just as much a tamper-evident record as the entry it's on.
+          // A deleted tombstone remains in the parent collection for chain
+          // continuity, but its conversation must not remain readable.
+          allow read: if isOwner(uid) && canReadConversation(uid, entryId);
+          allow create, update, delete: if false;
+        }
+      }
+
+      // Full deleted records are backend-only retention material. They are
+      // never part of the browser's readable journal surface.
+      match /retentionEntries/{entryId} {
+        allow read, write: if false;
+      }
+
+      match /retentionTurns/{turnId} {
+        allow read, write: if false;
+      }
+
+      match /meta/{docId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /usage/{dateKey} {
+        // Daily token-budget counters — same backend-only-write pattern.
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /audit/{eventId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+
+    // Default deny — nothing outside /users/{uid}/... is reachable at all.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

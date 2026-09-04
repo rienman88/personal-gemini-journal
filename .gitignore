@@ -1,0 +1,42 @@
+# Dependencies and generated output
+**/node_modules/
+server/lib/
+web/dist/
+web-dist/
+web/test-results/
+web/playwright-report/
+web/.last-run.json
+coverage/
+.nyc_output/
+
+# Local configuration and secrets. Keep example templates publishable.
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+
+# Emulator state, logs, and local machine files
+.firebase/
+**/.firebase/
+firebase-debug.log
+firestore-debug.log
+*.log
+.DS_Store
+.idea/
+**/.npmrc
+
+# Credentials and private key material
+key.json
+**/key.json
+server/key.json
+**/*service-account*.json
+**/*service_account*.json
+**/*credentials*.json
+**/firebase-adminsdk*.json
+**/client-secret*.json
+**/client_secret*.json
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks

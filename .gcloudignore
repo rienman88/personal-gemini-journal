@@ -1,0 +1,28 @@
+# Keep local dependencies, generated output, logs, and credentials out of the
+# Cloud Build source archive. The Dockerfile also applies its own exclusions.
+**/node_modules
+server/lib
+web/dist
+web-dist
+coverage
+.nyc_output
+.git
+**/.env
+**/.env.*
+**/.firebase
+**/.npmrc
+**/key.json
+key.json
+**/*service-account*.json
+**/*service_account*.json
+**/*credentials*.json
+**/firebase-adminsdk*.json
+**/client-secret*.json
+**/client_secret*.json
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+*.log
+.DS_Store
