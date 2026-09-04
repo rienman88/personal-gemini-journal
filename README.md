@@ -6,14 +6,14 @@
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
-| What is Personal Gemini Journal | [`How it works?`](HOW_IT_WORKS.md) |
-| AI Studio Build | [`Special Instructions`](CONSTITUTION.md) | 
-| Docker | [`Docker Deployment`](DOCKER_DEPLOYMENT_RUNBOOK.md) |
-| Implementation | [`IMPLEMENTATION GUIDE`](IMPLEMENTATION_GUIDE.md) |
-| Usuability checklist | [`Useability test`](USABILITY_CHECKLIST.md) |
-| OWASP Top 10 LLM Coverage | [`OWASP Coverage`](OWASP_LLM_TOP10_COVERAGE.md) |
-| Technical reviewer | [`TECHNICAL WRITE-UP`](TECHNICAL_WRITEUP.md) |
-| Manual Verification Checklist | [`TEST RESULTS`](TEST_RESULTS.md) |
+| What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
+| AI Studio Build | [`Special Instructions`](docs/CONSTITUTION.md) | 
+| Docker | [`Docker Deployment`](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) |
+| Implementation | [`IMPLEMENTATION GUIDE`](docs/IMPLEMENTATION_GUIDE.md) |
+| Usuability checklist | [`Useability test`](docs/USABILITY_CHECKLIST.md) |
+| OWASP Top 10 LLM Coverage | [`OWASP Coverage`](docs/OWASP_LLM_TOP10_COVERAGE.md) |
+| Technical reviewer | [`TECHNICAL WRITE-UP`](docs/TECHNICAL_WRITEUP.md) |
+| Manual Verification Checklist | [`TEST RESULTS`](docs/TEST_RESULTS.md) |
 
 
 # Personal Gemini Journal
