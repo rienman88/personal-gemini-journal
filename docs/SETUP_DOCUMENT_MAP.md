@@ -8,6 +8,13 @@ The documents are intentionally separated by responsibility. Do not treat every 
 
 The current feature set includes a server-enforced **AI Journal / Private Journal** choice. It is intentionally visible throughout the public documentation because it is a user-facing privacy capability, not a private operator detail. The implementation source of truth is `server/src/lib/journalMode.ts`, the preference route is in `server/src/routes/journal.ts`, and the UI control is in `web/src/components/JournalModeToggle.tsx`.
 
+| Order | Responsibility | Primary document | What to do |
+| --- | --- | --- | --- |
+| 1 | AI Studio security setup | [CONSTITUTION.md](CONSTITUTION.md) | Paste the complete contents into Google AI Studio Custom Instructions before asking AI Studio to build or extend the application. |
+| 2 | Docker and image build | [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) | Follow the Dockerfile, Cloud Build, Artifact Registry, staged App Check, and image-release procedure. |
+| 3 | Firebase and Cloud operations | [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) | Follow the generic project-specific setup for Firebase Auth, Firestore, App Check, Secret Manager, gcloud, IAM, Cloud Run, Scheduler, and production verification. |
+| 4 | End-to-end operator flow | [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) | Use the public-safe cloud runbook together with the Docker runbook as the linear deployment path for a new project. |
+
 ## Setup Responsibilities
 
 ### 1. Google AI Studio
