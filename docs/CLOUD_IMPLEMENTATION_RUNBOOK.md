@@ -479,34 +479,6 @@ Cloud Console can issue background requests for products or resources that are n
 
 grm or Grammarly console messages are injected by the extension and are not application failures. The UI may add data-gram=false to journal fields, but production verification should also be repeated in a clean profile with extensions disabled.
 
-### Windows shell syntax
-
-PowerShell environment-variable syntax does not work in cmd.exe, and cmd.exe continuation syntax does not work in PowerShell. Use one shell consistently. In PowerShell use $env:NAME; in cmd use set NAME=value. Verify the active shell before running a deployment command.
-
-## Private Execution Log Template
-
-Keep project-specific values in a private operator record unless they are explicitly safe to publish.
-
-| Time | Area | Action | Result | Evidence reference | Public-safe? |
-| --- | --- | --- | --- | --- | --- |
-| YYYY-MM-DD HH:MM | Firebase | App Check registration | PASS / BLOCKED | Console screenshot with secrets redacted | YES / NO |
-| YYYY-MM-DD HH:MM | Google Cloud | Provisioning | PASS / BLOCKED | Private command output | NO |
-| YYYY-MM-DD HH:MM | Cloud Build | Image build | PASS / BLOCKED | Build ID stored privately | NO |
-| YYYY-MM-DD HH:MM | Cloud Run | Deployment | PASS / BLOCKED | Service status without URL if needed | YES / NO |
-| YYYY-MM-DD HH:MM | Browser | Smoke verification | PASS / FAIL | Sanitized test result | YES |
-| YYYY-MM-DD HH:MM | Retention | Controlled redaction fixture | PASS / BLOCKED | Sanitized audit event | YES / NO |
-| YYYY-MM-DD HH:MM | IAM | Final least-privilege review | PASS / BLOCKED | Policy review record | NO |
-| YYYY-MM-DD HH:MM | Academy | Submission package | PASS / BLOCKED | Submission confirmation | YES / NO |
-
-## Public Repository Safety
-
-Before publishing:
-
-~~~powershell
-rg --files -g "!**/node_modules/**" -g "!web-dist/**" -g "!server/lib/**" -g "!web/test-results/**" -g "!**/.env*" -g "!**/*.log"
-rg -n --hidden -i -g "!**/node_modules/**" -g "!web-dist/**" -g "!server/lib/**" -g "!web/test-results/**" -g "!**/.env*" -g "!**/*.log" "AIza|BEGIN PRIVATE KEY|eyJ[a-zA-Z0-9_-]{20,}|GEMINI_API_KEY=|RETENTION_WORKER_TOKEN="
-~~~
-
 Review the output manually. Never rely only on a pattern scan. Check GitHub's repository secret scanning after publication and rotate anything that was exposed.
 
 ## Official References
@@ -522,7 +494,6 @@ Review the output manually. Never rely only on a pattern scan. Check GitHub's re
 - Firestore IAM and access control: https://cloud.google.com/firestore/docs/security/iam
 - Cloud Audit Logs: https://cloud.google.com/logging/docs/audit
 - Google Cloud Policy Simulator: https://cloud.google.com/policy-intelligence/docs/simulate-policy
-- Hack2Skill APAC GenAI Academy Cohort 3: https://hack2skill.com/event/apac-genaiacademy?tab=cohort3
 
 ## Change Control
 
