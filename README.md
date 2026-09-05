@@ -6,6 +6,7 @@
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
 | Version 1 Features | [Personal Gemini Journal Full Version 1 Features](#version-1-feature-inventory) |
+| API Section | [View the API surface and route matrix](docs/EVALUATION_DOSSIER.md#api-surface) |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
 | Threat model illustration | [Threat model](docs/THREAT_MODEL.md) with [visual boundary map](docs/THREAT_MODEL.svg) |
 | What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
