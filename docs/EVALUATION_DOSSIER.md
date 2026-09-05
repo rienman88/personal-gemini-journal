@@ -243,5 +243,6 @@ Evaluate this repository against **Authenticity, Usability, Stability, and Secur
 - [CONSTITUTION.md](CONSTITUTION.md) - Google AI Studio security instructions
 - [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) - LLM threat coverage and limits
 - [THREAT_MODEL.md](THREAT_MODEL.md) - formal attack surface, mitigations, residual risks, and deferred hardening
+- [SUBMISSION_STACK_MAP.md](SUBMISSION_STACK_MAP.md) - submission-ready service mapping, source evidence, and demonstration proof
 - [TEST_RESULTS.md](TEST_RESULTS.md) - manual and automated evidence
 - [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md) - usability walkthrough and production checks

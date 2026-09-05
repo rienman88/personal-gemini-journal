@@ -91,6 +91,7 @@ These documents are important, but they should be used after setup or for a spec
 | USABILITY_CHECKLIST.md | User-facing interaction and browser smoke verification. |
 | OWASP_LLM_TOP10_COVERAGE.md | Security coverage, limitations, and manual security tests. |
 | THREAT_MODEL.md / THREAT_MODEL.svg | Formal attack surface, visual boundaries, mitigations, residual risks, and deferred hardening decisions. |
+| SUBMISSION_STACK_MAP.md | Submission-ready brief description, service selections, complete stack mapping, source evidence, and safe demo proof. |
 | EVALUATION_DOSSIER.md | Reviewer-facing implementation and evaluation summary. |
 | TECHNICAL_WRITEUP.md | Detailed technical rationale and data flow. |
 | HOW_IT_WORKS.md | Plain-language product explanation. |
@@ -130,6 +131,7 @@ Do not use README, evaluation, video, or test narrative text as a substitute for
 - CLOUD_IMPLEMENTATION_RUNBOOK.md defines the generic cloud operator path and safe execution record.
 - TEST_RESULTS.md defines manual verification actions.
 - THREAT_MODEL.md defines the formal attack surface and residual-risk register.
+- SUBMISSION_STACK_MAP.md defines the submission service selections, complete stack mapping, and evidence language.
 - README.md provides the public project overview and entry points.
 - The Academy event page and official codelab define external submission requirements and deadlines.
 

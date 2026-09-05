@@ -115,7 +115,7 @@ npm run test:smoke
 npx --yes firebase-tools@latest emulators:exec --only firestore,auth "npm test --prefix server"
 ```
 
-Current recorded result: the build passes, the browser smoke suite has 5 passing tests, and the emulator-backed server suite has 38 passing and 2 intentionally pending tests. The pending tests are the live Gemini authenticity check without `GEMINI_API_KEY_TEST` and the named route-level idempotency specification awaiting a complete route harness. AI mode policy tests additionally verify the server-enforced Private Journal no-Gemini branch.
+Current recorded result: the build passes, the browser smoke suite has 5 passing tests, and the emulator-backed server suite has 41 passing and 2 intentionally pending tests. The pending tests are the live Gemini authenticity check without `GEMINI_API_KEY_TEST` and the named route-level idempotency specification awaiting a complete route harness. AI mode policy tests additionally verify the server-enforced Private Journal no-Gemini branch.
 
 The original manual system verification record in [TEST_RESULTS.md](TEST_RESULTS.md) contains 9 of 9 passed checks covering entry creation, multi-turn replies, authentication persistence, Privacy Guardian on entries and replies, integrity verification, audit activity, category clustering, and raw Firestore inspection. The same file now contains the expanded feature-by-feature manual matrix for deletion, retention, App Check, deployment, accessibility, recovery, and AI mode. The automated evidence also covers deletion lifecycle logic, App Check middleware, Firestore isolation, modal behavior, Calendar v1, and the server-enforced AI/private policy. This is application evidence; it does not replace final production checks below.
 

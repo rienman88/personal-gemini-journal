@@ -69,7 +69,7 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 - [x] Firestore rules test resolves the root-level rules file after TypeScript compilation
 - [x] Firestore emulator cleanup cannot create a secondary failure when setup fails
 - [x] Fallback-attempt assertion matches the six-model ladder and three attempts per model
-- [x] Emulator-backed server suite passes: 38 passing, 2 intentionally pending
+- [x] Emulator-backed server suite passes: 41 passing, 2 intentionally pending
 
 ## Calendar runtime error triage — 2026-09-03
 

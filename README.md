@@ -7,6 +7,7 @@
 | Demonstration video | [Linkedin]() |
 | Version 1 Features | [Personal Gemini Journal Full Version 1 Features](#version-1-feature-inventory) |
 | API Section | [View the API surface and route matrix](docs/EVALUATION_DOSSIER.md#api-surface) |
+| Submission stack map | [Services, source evidence, checkbox selections, and demo proof](docs/SUBMISSION_STACK_MAP.md) |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
 | Threat model illustration | [Threat model](docs/THREAT_MODEL.md) with [visual boundary map](docs/THREAT_MODEL.svg) |
 | What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
@@ -290,3 +291,4 @@ Firestore Security Rules isolate ordinary authenticated users from one another, 
 - `docs/DOCKER_DEPLOYMENT_RUNBOOK.md` records the actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log.
 - `docs/CLOUD_IMPLEMENTATION_RUNBOOK.md` is the implementation-specific Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error-handling, and verification runbook with safe operator record templates.
 - `docs/EVALUATION_DOSSIER.md` is the single complete feature and evaluation brief for reviewers or another AI system.
+- `docs/SUBMISSION_STACK_MAP.md` maps the required form selections, complete service stack, source evidence, and safe demonstration proof.
