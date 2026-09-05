@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { scanForSensitiveContent, PiiMatch } from "../lib/piiDetector";
-import { replyToEntry } from "../lib/api";
+import { JournalMode, replyToEntry } from "../lib/api";
 import PrivacyGuardianModal from "./PrivacyGuardianModal";
 
 interface Turn {
@@ -20,7 +20,7 @@ interface Turn {
   createdAt: string;
 }
 
-export default function ConversationThread({ entryId }: { entryId: string }) {
+export default function ConversationThread({ entryId, journalMode = "ai" }: { entryId: string; journalMode?: JournalMode }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [reply, setReply] = useState("");
   const [pending, setPending] = useState<PiiMatch[] | null>(null);
@@ -28,15 +28,20 @@ export default function ConversationThread({ entryId }: { entryId: string }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (journalMode === "private") {
+      setTurns([]);
+      return;
+    }
     const uid = auth.currentUser?.uid;
     if (!uid) return;
     const q = query(collection(db, `users/${uid}/entries/${entryId}/conversation`), orderBy("createdAt", "asc"));
     return onSnapshot(q, (snap) => {
       setTurns(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Turn)));
     });
-  }, [entryId]);
+  }, [entryId, journalMode]);
 
   function requestSend() {
+    if (journalMode === "private") return;
     if (!reply.trim()) return;
     const matches = scanForSensitiveContent(reply);
     if (matches.length > 0) setPending(matches);
@@ -60,6 +65,15 @@ export default function ConversationThread({ entryId }: { entryId: string }) {
   function choosePrivacyAction(acknowledgedSend: boolean) {
     setPending(null);
     void send(acknowledgedSend);
+  }
+
+  if (journalMode === "private") {
+    return (
+      <div className="conversation-thread private-conversation">
+        <p className="derived-label">PRIVATE JOURNAL — NO GEMINI REPLIES</p>
+        <p>Replies are disabled for this entry because it was saved without AI processing.</p>
+      </div>
+    );
   }
 
   return (

@@ -19,7 +19,8 @@ type AuditEventType =
   | "auth_rejected"
   | "data_deleted"
   | "entry_deleted"
-  | "entry_redacted";
+  | "entry_redacted"
+  | "journal_mode_changed";
 
 interface AuditEvent {
   id: string;
@@ -60,6 +61,10 @@ function describeEvent(event: AuditEvent): { label: string; detail?: string; ton
       return { label: "Entry removed from journal", tone: "neutral" };
     case "entry_redacted":
       return { label: "Retained entry privacy-redacted", tone: "positive" };
+    case "journal_mode_changed": {
+      const mode = event.detail?.journalMode === "private" ? "Private Journal" : "AI Journal";
+      return { label: `Journal mode changed to ${mode}`, tone: "neutral" };
+    }
     case "auth_rejected":
       return { label: "Sign-in rejected", tone: "warning" };
     default:

@@ -6,6 +6,22 @@ export function createEntry() {
   return new Promise<never>(() => undefined);
 }
 
+export function replyToEntry() {
+  return new Promise<never>(() => undefined);
+}
+
+export function deleteData() {
+  return Promise.resolve({ deleted: true, entriesDeleted: 0 });
+}
+
+export function getJournalPreferences() {
+  return Promise.resolve({ journalMode: "ai" as const });
+}
+
+export function updateJournalMode(journalMode: "ai" | "private") {
+  return Promise.resolve({ journalMode });
+}
+
 export function deleteEntry() {
   return Promise.resolve({ deleted: true });
 }

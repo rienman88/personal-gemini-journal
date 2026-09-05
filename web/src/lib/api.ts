@@ -21,14 +21,20 @@ export interface IntegrityVerificationResult {
   thread?: string;
 }
 
-async function authedFetch(path: string, body?: unknown): Promise<any> {
+export type JournalMode = "ai" | "private";
+
+export interface JournalPreferences {
+  journalMode: JournalMode;
+}
+
+async function authedFetch(path: string, body?: unknown, method: "GET" | "POST" = "POST"): Promise<any> {
   const user = auth.currentUser;
   if (!user) throw new Error("Not signed in");
   const token = await user.getIdToken();
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
+  if (body !== undefined) headers["Content-Type"] = "application/json";
 
   if (appCheck) {
     try {
@@ -40,13 +46,21 @@ async function authedFetch(path: string, body?: unknown): Promise<any> {
   }
 
   const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
+    method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
+}
+
+export function getJournalPreferences(): Promise<JournalPreferences> {
+  return authedFetch("/api/preferences", undefined, "GET");
+}
+
+export function updateJournalMode(journalMode: JournalMode): Promise<JournalPreferences> {
+  return authedFetch("/api/preferences", { journalMode });
 }
 
 export function createEntry(content: string, clientRequestId: string, acknowledgedSend: boolean) {

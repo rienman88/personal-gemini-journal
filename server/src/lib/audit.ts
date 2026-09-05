@@ -18,7 +18,8 @@ export type AuditEventType =
   | "auth_rejected"
   | "data_deleted"
   | "entry_deleted"
-  | "entry_redacted";
+  | "entry_redacted"
+  | "journal_mode_changed";
 
 export async function recordAuditEvent(
   uid: string,

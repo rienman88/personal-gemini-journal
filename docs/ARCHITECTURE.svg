@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title description">
   <title id="title">Personal Gemini Journal architecture</title>
-  <desc id="description">Browser Firebase clients connect to Firebase Authentication, Firebase App Check, Firestore owner-scoped reads, and a single Cloud Run service. Cloud Run verifies identity and App Check, calls Gemini with Secret Manager credentials, writes through Firebase Admin, and receives a protected daily retention request from Cloud Scheduler.</desc>
+  <desc id="description">Browser Firebase clients connect to Firebase Authentication, Firebase App Check, Firestore owner-scoped reads, and a single Cloud Run service. The user chooses AI Journal or Private Journal; Cloud Run enforces that choice, calls Gemini only for AI Journal, writes through Firebase Admin, and receives a protected daily retention request from Cloud Scheduler.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f7fafc"/>
@@ -57,10 +57,10 @@
   <text x="100" y="271" class="body">Google Sign-In via Firebase Auth</text>
   <text x="100" y="297" class="body">reCAPTCHA Enterprise App Check</text>
   <text x="100" y="323" class="body">Entry and reply composer</text>
-  <text x="100" y="349" class="body">Privacy Guardian decisions</text>
-  <text x="100" y="375" class="body">Calendar v1 and related graph</text>
-  <text x="100" y="401" class="body">Integrity and security activity</text>
-  <text x="100" y="427" class="body">Delete entry / delete journal</text>
+  <text x="100" y="349" class="body">AI Journal / Private Journal toggle</text>
+  <text x="100" y="375" class="body">Privacy Guardian decisions</text>
+  <text x="100" y="401" class="body">Calendar, related graph, integrity</text>
+  <text x="100" y="427" class="body">Security activity and deletion</text>
   <line x1="100" y1="463" x2="357" y2="463" stroke="#9db4b8"/>
   <text x="100" y="490" class="label">READ PATH</text>
   <text x="100" y="513" class="small">Firestore realtime reads use</text>
@@ -73,7 +73,7 @@
   <text x="540" y="253" class="small">One Node.js container serves the frontend and API</text>
   <rect x="540" y="275" width="420" height="67" fill="#fffaf0" stroke="#d8bd88" rx="10"/>
   <text x="560" y="301" class="label">REQUEST GATES</text>
-  <text x="560" y="324" class="body">CORS / COOP -> Firebase ID token -> App Check</text>
+  <text x="560" y="324" class="body">CORS / COOP -> ID token -> App Check -> mode policy</text>
   <rect x="540" y="365" width="195" height="104" fill="#fffaf0" stroke="#d8bd88" rx="10"/>
   <text x="560" y="391" class="label">JOURNAL API</text>
   <text x="560" y="415" class="small">POST /api/entries</text>
@@ -81,8 +81,8 @@
   <text x="560" y="455" class="small">POST /api/delete-data</text>
   <rect x="765" y="365" width="195" height="104" fill="#fffaf0" stroke="#d8bd88" rx="10"/>
   <text x="785" y="391" class="label">CONTROLS</text>
-  <text x="785" y="415" class="small">PII scan and redaction</text>
-  <text x="785" y="435" class="small">Rate and token budgets</text>
+  <text x="785" y="415" class="small">AI/private policy; PII scan for AI</text>
+  <text x="785" y="435" class="small">Rate and token budgets for AI</text>
   <text x="785" y="455" class="small">Idempotency and hashes</text>
   <rect x="540" y="492" width="420" height="115" fill="#fffaf0" stroke="#d8bd88" rx="10"/>
   <text x="560" y="518" class="label">ADMIN SDK WRITE BOUNDARY</text>
@@ -94,7 +94,7 @@
   <text x="1130" y="241" class="card-title">Cloud Firestore</text>
   <text x="1130" y="273" class="body">users/{uid}/entries</text>
   <text x="1130" y="296" class="body">entries/{entryId}/conversation</text>
-  <text x="1130" y="319" class="body">meta, usage, audit</text>
+  <text x="1130" y="319" class="body">meta/preferences, usage, audit</text>
   <text x="1130" y="342" class="body">retentionEntries / retentionTurns</text>
   <line x1="1130" y1="367" x2="1455" y2="367" stroke="#aa9ac5"/>
   <text x="1130" y="393" class="label">SECURITY RULES</text>
@@ -119,7 +119,7 @@
   <path d="M 990 430 C 1040 430, 1060 350, 1100 350" class="secure-line"/>
   <text x="1010" y="375" class="label">Admin SDK</text>
   <path d="M 990 545 C 1045 545, 1055 570, 1100 570" class="secure-line"/>
-  <text x="1010" y="532" class="label">bounded Gemini call</text>
+  <text x="1010" y="532" class="label">AI mode only: bounded Gemini call</text>
   <path d="M 1100 724 C 1040 724, 1035 583, 960 583" class="secure-line dashed"/>
   <text x="985" y="692" class="label">runtime secret access</text>
   <path d="M 385 402 C 550 402, 840 270, 1100 300" class="line dashed"/>

@@ -25,6 +25,13 @@ firestore-debug.log
 .idea/
 **/.npmrc
 
+# Local-only operator docs and feature review notes (intentionally excluded from the public repository)
+docs/AI_MODE_IMPLEMENTATION_REVIEW.md
+docs/GITHUB_PUBLICATION_CHECKLIST.md
+docs/GITHUB_WEB_PUBLICATION_GUIDE.md
+docs/SELF_DEPLOYMENT_GUIDE.md
+docs/VIDEO_SUBMISSION_SCRIPT.md
+
 # Credentials and private key material
 key.json
 **/key.json

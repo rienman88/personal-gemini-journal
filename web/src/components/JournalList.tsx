@@ -9,6 +9,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
+import { JournalMode } from "../lib/api";
 import { buildCategoryGraph, relatedEntryIds } from "../lib/topicGraph";
 import ConversationThread from "./ConversationThread";
 import JournalCalendar from "./JournalCalendar";
@@ -26,6 +27,8 @@ interface Entry {
   geminiOk: boolean;
   hash: string;
   sentToGeminiRedacted: boolean;
+  journalMode?: JournalMode;
+  aiUsed?: boolean;
   deletionState?: "active" | "deleted" | "deleting";
 }
 
@@ -65,6 +68,7 @@ export default function JournalList() {
       <JournalCalendar entries={entries} />
       <div className="entry-feed">
         {entries.map((e) => {
+          const journalMode = e.journalMode ?? "ai";
           const related = relatedEntryIds(e, graph)
             .map((id) => byId.get(id))
             .filter((x): x is Entry => Boolean(x));
@@ -83,6 +87,9 @@ export default function JournalList() {
                   </span>
                 ))}
                 {e.sentToGeminiRedacted && <span className="pill pill-flagged">redacted before Gemini</span>}
+                <span className={`pill ${journalMode === "private" ? "pill-private" : "pill-category"}`}>
+                  {journalMode === "private" ? "Private Journal · AI not used" : "AI Journal"}
+                </span>
               </div>
               <div className="entry-actions">
                 <button
@@ -95,7 +102,12 @@ export default function JournalList() {
                 </button>
               </div>
 
-              {e.geminiOk ? (
+              {journalMode === "private" ? (
+                <div className="private-block">
+                  <p className="derived-label">PRIVATE JOURNAL — AI NOT USED</p>
+                  <p>Saved without Gemini analysis, derived insight, or AI conversation.</p>
+                </div>
+              ) : e.geminiOk ? (
                 <div className="derived-block">
                   <p className="derived-label">DERIVED — from Gemini, not your words</p>
                   <p>{e.summary}</p>
@@ -106,7 +118,7 @@ export default function JournalList() {
               )}
 
               <RelatedEntries entries={related} />
-              <ConversationThread entryId={e.id} />
+              <ConversationThread entryId={e.id} journalMode={journalMode} />
             </article>
           );
         })}

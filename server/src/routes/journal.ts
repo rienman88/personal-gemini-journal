@@ -15,6 +15,7 @@ import { enforceRateLimit, RateLimitError, enforceTokenBudget, recordTokenUsage,
 import { recordAuditEvent } from "../lib/audit";
 import { computeHash, GENESIS } from "../lib/hashChain";
 import { archiveAndTombstoneEntry, RETENTION_DAYS } from "../lib/retention";
+import { getJournalModePlan, journalModeFromData, parseJournalMode, JournalMode } from "../lib/journalMode";
 
 export const journalRouter = Router();
 
@@ -36,6 +37,48 @@ function requireUid(req: AuthedRequest, res: Response): string | null {
   }
   return req.uid;
 }
+
+async function getUserJournalMode(db: ReturnType<typeof getFirestore>, uid: string): Promise<JournalMode> {
+  const preferences = await db.doc(`users/${uid}/meta/preferences`).get();
+  return journalModeFromData(preferences.exists ? preferences.data() : undefined);
+}
+
+// ---------------------------------------------------------------------------
+// GET/POST /api/preferences — persist the user's AI processing choice
+// ---------------------------------------------------------------------------
+journalRouter.get("/preferences", async (req: AuthedRequest, res: Response) => {
+  const uid = requireUid(req, res);
+  if (!uid) return;
+
+  try {
+    const mode = await getUserJournalMode(getFirestore(), uid);
+    res.json({ journalMode: mode });
+  } catch (err) {
+    console.error("GET /api/preferences error:", err);
+    res.status(500).json({ error: "Couldn't load journal mode." });
+  }
+});
+
+journalRouter.post("/preferences", async (req: AuthedRequest, res: Response) => {
+  const uid = requireUid(req, res);
+  if (!uid) return;
+
+  const mode = parseJournalMode(req.body?.journalMode);
+  if (!mode) return void res.status(400).json({ error: "journalMode must be ai or private" });
+
+  try {
+    const db = getFirestore();
+    await db.doc(`users/${uid}/meta/preferences`).set(
+      { journalMode: mode, updatedAt: FieldValue.serverTimestamp() },
+      { merge: true }
+    );
+    await recordAuditEvent(uid, "journal_mode_changed", "success", { journalMode: mode });
+    res.json({ journalMode: mode });
+  } catch (err) {
+    console.error("POST /api/preferences error:", err);
+    res.status(500).json({ error: "Couldn't save journal mode." });
+  }
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/entries — create a journal entry
@@ -64,11 +107,16 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
       return void res.json({ id: doc.id, hash: doc.data().hash, deduplicated: true });
     }
 
+    const journalMode = await getUserJournalMode(db, uid);
+    const modePlan = getJournalModePlan(journalMode);
+
     await enforceRateLimit(uid);
-    await enforceTokenBudget(uid);
+    if (modePlan.consumeTokenBudget) await enforceTokenBudget(uid);
 
     // --- Privacy Guardian: deterministic boundary before Gemini ---
-    const piiMatches = scanForSensitiveContent(content);
+    // Private Journal mode intentionally skips this outbound-AI decision path;
+    // the server still authenticates, rate-limits, hashes, and persists it.
+    const piiMatches = modePlan.runPrivacyGuardian ? scanForSensitiveContent(content) : [];
     const piiCategories = [...new Set(piiMatches.map((m) => m.category))];
     const shouldRedactForGemini = piiMatches.length > 0 && !acknowledgedSend;
     const geminiInput = shouldRedactForGemini ? redact(content, piiMatches) : content;
@@ -81,11 +129,11 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
       });
     }
 
-    const result = await analyzeEntry(GEMINI_API_KEY(), geminiInput);
+    const result = modePlan.useGemini ? await analyzeEntry(GEMINI_API_KEY(), geminiInput) : null;
     // Never let a metering write be able to block the actual save below —
     // the same "never fail silently on the user's words" principle that
     // already applies to Gemini itself failing.
-    await recordTokenUsage(uid, result.tokensUsed).catch(() => undefined);
+    if (result) await recordTokenUsage(uid, result.tokensUsed).catch(() => undefined);
 
     const createdAt = new Date().toISOString();
     const chainRef = db.doc(`users/${uid}/meta/chain`);
@@ -101,18 +149,20 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
       const entryDoc = {
         uid,
         clientRequestId,
+        journalMode,
+        aiUsed: modePlan.useGemini,
         deletionState: "active",
         content, // RAW — exactly what the user wrote, never mutated
         createdAt,
         prevHash,
         hash,
         piiDetected: piiCategories,
-        sentToGeminiRedacted: shouldRedactForGemini,
-        geminiOk: result.ok,
-        summary: result.ok ? result.analysis.summary : null, // DERIVED
-        topics: result.ok ? result.analysis.topics : [], // DERIVED
-        categories: result.ok ? result.analysis.categories : [], // DERIVED — closed-set, used for the topic graph
-        reflection: result.ok ? result.analysis.reflection : null, // DERIVED
+        sentToGeminiRedacted: modePlan.useGemini && shouldRedactForGemini,
+        geminiOk: result?.ok ?? false,
+        summary: result?.ok ? result.analysis.summary : null, // DERIVED
+        topics: result?.ok ? result.analysis.topics : [], // DERIVED
+        categories: result?.ok ? result.analysis.categories : [], // DERIVED — closed-set, used for the topic graph
+        reflection: result?.ok ? result.analysis.reflection : null, // DERIVED
       };
       tx.set(entryRef, entryDoc);
       tx.set(chainRef, { headHash: hash, updatedAt: FieldValue.serverTimestamp() });
@@ -121,7 +171,7 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
 
     // Seed the conversation thread with Gemini's own reflection as turn 0,
     // chained off the entry's own hash — the entry anchors its own thread.
-    if (result.ok && saved.reflection) {
+    if (modePlan.createConversation && result?.ok && saved.reflection) {
       const turnCreatedAt = new Date().toISOString();
       const turnHash = computeHash(saved.hash, uid, saved.reflection, turnCreatedAt);
       await db.collection(`users/${uid}/entries/${entryRef.id}/conversation`).add({
@@ -133,14 +183,18 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
       });
     }
 
-    if (!result.ok) {
+    if (result && !result.ok) {
       await recordAuditEvent(uid, "gemini_fallback", "failure", { reason: result.reason.slice(0, 200) });
     }
-    await recordAuditEvent(uid, "entry_created", "success", { entryId: entryRef.id });
+    await recordAuditEvent(uid, "entry_created", "success", {
+      entryId: entryRef.id,
+      journalMode,
+      aiUsed: modePlan.useGemini,
+    });
 
     // Never report success before persistence has actually happened —
     // every write above already completed by the time this response fires.
-    res.json({ id: entryRef.id, hash: saved.hash, geminiOk: result.ok });
+    res.json({ id: entryRef.id, hash: saved.hash, geminiOk: result?.ok ?? false, aiUsed: modePlan.useGemini });
   } catch (err) {
     console.error("POST /api/entries error:", err);
     if (err instanceof RateLimitError) {
@@ -180,6 +234,10 @@ journalRouter.post("/entries/:entryId/reply", async (req: AuthedRequest, res: Re
     const entryState = entrySnap.data()?.deletionState;
     if (entryState === "deleted" || entryState === "deleting") {
       return void res.status(410).json({ error: "entry deleted" });
+    }
+
+    if (journalModeFromData(entrySnap.data()) === "private") {
+      return void res.status(409).json({ error: "Private Journal entries do not support Gemini replies" });
     }
 
     const existing = await conversationRef.where("clientRequestId", "==", clientRequestId).limit(1).get();

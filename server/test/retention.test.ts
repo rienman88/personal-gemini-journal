@@ -33,6 +33,8 @@ describe("Retention lifecycle", () => {
       "uid-1",
       {
         clientRequestId: "request-1",
+        journalMode: "private",
+        aiUsed: false,
         content: "private words",
         createdAt: "2026-09-02T14:27:42.480Z",
         prevHash: "a".repeat(64),
@@ -45,6 +47,8 @@ describe("Retention lifecycle", () => {
 
     expect(tombstone).to.include({
       uid: "uid-1",
+      journalMode: "private",
+      aiUsed: false,
       deletionState: "deleted",
       prevHash: "a".repeat(64),
       hash: "b".repeat(64),
@@ -61,6 +65,8 @@ describe("Retention lifecycle", () => {
       "entry-1",
       {
         createdAt: "2026-09-02T14:27:42.480Z",
+        journalMode: "private",
+        aiUsed: false,
         deletedAt,
         deletedByUidHash: "c".repeat(64),
         prevHash: "a".repeat(64),
@@ -78,6 +84,8 @@ describe("Retention lifecycle", () => {
     expect(redacted).to.include({
       uid: "uid-1",
       entryId: "entry-1",
+      journalMode: "private",
+      aiUsed: false,
       retentionState: "redacted",
       content: "Deleted",
       reflection: "Deleted",

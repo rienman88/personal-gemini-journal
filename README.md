@@ -10,13 +10,14 @@ For version 1, the accurate security claim is:
 
 This is an intentional trusted-backend model. Firebase Authentication, Firestore Security Rules, and App Check protect the application boundary and user-to-user isolation; they do not prevent a sufficiently privileged Google Cloud operator or the Cloud Run runtime identity from reading Firestore data. The practical hardening priority is restricting human IAM access, removing unnecessary `roles/editor` after Policy Simulator review, separating deployer and auditor roles, and retaining access audit logs.
 
-For the complete evaluator-facing feature inventory, evidence matrix, architecture map, and honest production boundaries, read [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md).
+For the complete evaluator-facing feature inventory, evidence matrix, architecture map, and honest production boundaries, read [EVALUATION_DOSSIER.md](docs/EVALUATION_DOSSIER.md).
 
 ## Current capabilities
 
 - Google Sign-In through Firebase Authentication; the application does not handle passwords.
 - Popup sign-in with redirect fallback, persistent browser-local auth state through Firebase, and explicit sign-out.
 - Each authenticated account receives a Firebase user ID (`uid`) that is used as the ownership boundary for every user-scoped path.
+- User-controlled AI Journal / Private Journal mode is persisted per user; Private Journal saves the entry without any Gemini call or AI reply.
 - Entry input is bounded to 8,000 characters; replies are bounded to 2,000 characters.
 - Idempotent entry and reply requests use client-generated request IDs.
 - Multi-turn conversations scoped to one journal entry.
@@ -35,7 +36,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 - Delete-all-journal removes every visible entry and conversation for the signed-in user in one operation, preserves the audit trail, archives protected records, and applies the same delayed redaction lifecycle.
 - Firebase App Check support for the custom Express API, with explicit production enforcement and a fail-closed client token path.
 - Secret Manager supplies the Gemini API key, deletion HMAC key, and retention worker token to Cloud Run at runtime; these values are not included in the frontend bundle or Docker build arguments.
-- OWASP LLM Top 10 controls are mapped with implemented evidence and known limits in [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md).
+- OWASP LLM Top 10 controls are mapped with implemented evidence and known limits in [OWASP_LLM_TOP10_COVERAGE.md](docs/OWASP_LLM_TOP10_COVERAGE.md).
 - Repeatable Docker-to-Cloud-Run provisioning through `scripts/provision-cloud-run.ps1`: separate user-managed build/runtime identities, least-privilege IAM, App Check build/runtime configuration, Secret Manager bindings, challenge label, and daily retention scheduler.
 
 ## Version 1 feature inventory
@@ -44,6 +45,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 | --- | --- |
 | Google account sign-in | Firebase Authentication with Google Sign-In, popup flow, redirect fallback, persistent browser-local state, and explicit sign-out. |
 | Per-user identity | Firebase assigns a unique `uid`; API authorization and Firestore paths are derived from the verified token UID, never from a client-supplied owner field. |
+| AI processing choice | A server-enforced per-user preference lets new entries use the full Gemini flow or save as Private Journal entries without Gemini, token usage, summaries, categories, reflections, or replies. |
 | App Check | Score-based reCAPTCHA Enterprise attestation is sent in `X-Firebase-AppCheck` and verified server-side on protected Express API routes. |
 | Storage segregation | Active entries, conversations, audit events, usage, hash-chain state, and backend-only retention records use separate `users/{uid}/...` paths. |
 | Privacy Guardian | Deterministic sensitive-content interception occurs before Gemini; the user chooses Redact before sending to Gemini or Send as-is anyway. |
@@ -53,7 +55,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 | Calendar | Calendar v1 is derived from the live journal entries, so deleting an entry automatically removes its calendar marker. |
 | Security Activity | Read-only user-scoped audit events expose security-relevant activity without allowing client writes or deletion. |
 | Secret Manager | Gemini, deletion-HMAC, and retention-worker secrets are injected into Cloud Run at runtime through Secret Manager references. |
-| OWASP LLM Top 10 | The control mapping, evidence, residual risks, and manual verification boundaries are recorded in [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md). |
+| OWASP LLM Top 10 | The control mapping, evidence, residual risks, and manual verification boundaries are recorded in [OWASP_LLM_TOP10_COVERAGE.md](docs/OWASP_LLM_TOP10_COVERAGE.md). |
 
 ## Architecture
 
@@ -66,7 +68,7 @@ Browser
   Firebase Auth + Google Sign-In
   Firebase App Check token
   Firestore owner-scoped reads
-  React dashboard: composer, feed, conversations, calendar, related entries
+  React dashboard: mode toggle, composer, feed, conversations, calendar, related entries
         |
         v
 Cloud Run: one container
@@ -74,7 +76,8 @@ Cloud Run: one container
   Express API
   Firebase Admin token verification
   App Check verification when enforced
-  Privacy Guardian
+  Server-enforced AI/private mode decision
+  Privacy Guardian for AI-bound entries and replies
   Gemini fallback client
   Hash-chain and audit writes
   Retention archive and scheduled redaction worker
@@ -87,6 +90,7 @@ Cloud Firestore
   users/{uid}/retentionEntries
   users/{uid}/retentionTurns
   users/{uid}/meta/chain and rateLimit
+  users/{uid}/meta/preferences
   users/{uid}/usage/{UTC-date}
   users/{uid}/audit
 ```
@@ -103,6 +107,7 @@ Firestore client reads are allowed only for the authenticated owner. All journal
 | User-isolated storage | `firestore.rules` and `users/{uid}/...` paths |
 | Gemini processing | `server/src/lib/geminiClient.ts` |
 | Multi-turn interaction | `server/src/routes/journal.ts` and `web/src/components/ConversationThread.tsx` |
+| User-controlled AI processing | `server/src/routes/journal.ts`, `server/src/lib/journalMode.ts`, and `web/src/components/JournalModeToggle.tsx` |
 | Secret management | `GEMINI_API_KEY` from Secret Manager in production; local env only for development |
 | Cloud Run deployment | Root `Dockerfile` builds the frontend and server into one container; `cloudbuild.yaml` pushes the image to Artifact Registry |
 | Custom security instructions | `CONSTITUTION.md`, intended for Google AI Studio System Instructions |
@@ -183,17 +188,17 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 npx --yes firebase-tools@latest emulators:exec --only firestore,auth "npm test --prefix server"
 ```
 
-Current verified result: 34 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
+Current verified result: 38 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
 
-The browser smoke suite currently covers both Privacy Guardian decisions, individual deletion confirmation, and Calendar v1 behavior, including mobile overflow protection.
+The browser smoke suite currently covers both Privacy Guardian decisions, individual deletion confirmation, Calendar v1 behavior including mobile overflow protection, and the AI Journal / Private Journal branch.
 
-The original nine-step manual verification run is recorded in [TEST_RESULTS.md](TEST_RESULTS.md), followed by the expanded feature-by-feature manual matrix. It covers plain entry creation, replies, authentication persistence, Privacy Guardian interception on entries and replies, integrity verification, audit activity, category clustering, raw Firestore inspection, deletion, retention, App Check, deployment, and usability boundaries. The original nine recorded checks passed; later rows distinguish passed evidence from operator checks ready to run.
+The original nine-step manual verification run is recorded in [TEST_RESULTS.md](docs/TEST_RESULTS.md), followed by the expanded feature-by-feature manual matrix. It covers plain entry creation, replies, authentication persistence, Privacy Guardian interception on entries and replies, integrity verification, audit activity, category clustering, raw Firestore inspection, deletion, retention, App Check, deployment, and usability boundaries. The original nine recorded checks passed; later rows distinguish passed evidence from operator checks ready to run.
 
-The consolidated evaluation view is [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md). It includes the full feature matrix, route contract, data lifecycle, security claims, limitations, test results, and external deployment checklist.
+The consolidated evaluation view is [EVALUATION_DOSSIER.md](docs/EVALUATION_DOSSIER.md). It includes the full feature matrix, route contract, data lifecycle, security claims, limitations, test results, and external deployment checklist.
 
 ## Deployment and Academy submission
 
-Follow [SELF_DEPLOYMENT_GUIDE.md](SELF_DEPLOYMENT_GUIDE.md) for the complete operator workflow, [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) for the executable Docker-to-Cloud-Run procedure, [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) for the actual project deployment record, and [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for:
+Follow [SETUP_DOCUMENT_MAP.md](docs/SETUP_DOCUMENT_MAP.md) first for the complete document order. Then use [DOCKER_DEPLOYMENT_RUNBOOK.md](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) for the executable Docker-to-Cloud-Run procedure, [CLOUD_IMPLEMENTATION_RUNBOOK.md](docs/CLOUD_IMPLEMENTATION_RUNBOOK.md) for the implementation-specific cloud deployment workflow and safe operator record template, and [IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) for:
 
 - Google AI Studio Custom Instructions setup using `CONSTITUTION.md`.
 - Firebase Authentication, Firestore, billing, and regional configuration.
@@ -235,18 +240,18 @@ Firestore Security Rules isolate ordinary authenticated users from one another, 
 ## Documentation map
 
 - `HOW_IT_WORKS.md` explains the user experience in plain language.
+- `SETUP_DOCUMENT_MAP.md` is the canonical order for AI Studio, Docker, Firebase, Cloud Run, verification, GitHub, and video setup documents.
 - `docs/ARCHITECTURE.svg` is the source-controlled architecture image for the current application and deployment topology.
 - `IMPLEMENTATION_GUIDE.md` maps the codelab requirements to local and external steps.
 - `TECHNICAL_WRITEUP.md` documents the implementation and verification evidence.
 - `CONSTITUTION.md` contains the Google AI Studio security instructions.
 - `OWASP_LLM_TOP10_COVERAGE.md` records actual LLM security coverage and limits.
 - `USABILITY_CHECKLIST.md` tracks manual usability work and browser smoke coverage.
-- `SELF_DEPLOYMENT_GUIDE.md` is the implementation-specific deploy-from-scratch guide, including imported Academy steps, alternatives, verification, rollback, and resolved deployment issues.
-- `GITHUB_PUBLICATION_CHECKLIST.md` is the repository-specific GitHub/GitLab publication boundary, secret audit, dry run, and post-publication control checklist.
-- `GITHUB_WEB_PUBLICATION_GUIDE.md` is the web-first public GitHub upload, verification, editing, deletion, and post-edit release workflow.
+- `docs/SETUP_DOCUMENT_MAP.md` is the public-safe deploy-from-scratch document order; the self-deployment guide and GitHub operator guides are intentionally local-only and are not required in the public repository.
+- GitHub publication procedures are intentionally kept private; use the public allowlist in `SETUP_DOCUMENT_MAP.md` and upload only reviewed source files.
 - `TEST_RESULTS.md` records the original nine-step manual verification checklist, the expanded feature-by-feature manual test matrix, and system execution evidence.
 - `VIDEO_SUBMISSION_SCRIPT.md` is the current word-for-word Hack2Skill video script, safe demo data, evidence sequence, security wording, and recording checklist.
 - `scripts/provision-cloud-run.ps1` provisions the production Cloud Run identity, App Check build/runtime settings, secrets, label, and retention scheduler.
 - `DOCKER_DEPLOYMENT_RUNBOOK.md` records the actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log.
-- `CLOUD_IMPLEMENTATION_RUNBOOK.md` records the actual Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, errors, rotations, and live verification state.
+- `CLOUD_IMPLEMENTATION_RUNBOOK.md` is the implementation-specific Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error-handling, and verification runbook with safe operator record templates.
 - `EVALUATION_DOSSIER.md` is the single complete feature and evaluation brief for reviewers or another AI system.

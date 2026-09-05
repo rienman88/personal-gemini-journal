@@ -5,19 +5,27 @@
  * needed, then calls the Express API. No manual refresh needed after —
  * JournalList listens to Firestore in real time.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { scanForSensitiveContent, PiiMatch } from "../lib/piiDetector";
-import { createEntry } from "../lib/api";
+import { createEntry, JournalMode } from "../lib/api";
 import PrivacyGuardianModal from "./PrivacyGuardianModal";
 
-export default function JournalEntryForm() {
+export default function JournalEntryForm({ journalMode = "ai", disabled = false }: { journalMode?: JournalMode; disabled?: boolean }) {
   const [content, setContent] = useState("");
   const [pending, setPending] = useState<PiiMatch[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (journalMode === "private") setPending(null);
+  }, [journalMode]);
+
   function requestSave() {
     if (!content.trim()) return;
+    if (journalMode === "private") {
+      void save(false);
+      return;
+    }
     const matches = scanForSensitiveContent(content);
     if (matches.length > 0) setPending(matches);
     else void save(false);
@@ -49,7 +57,7 @@ export default function JournalEntryForm() {
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write today's entry…"
         rows={6}
-        disabled={saving}
+        disabled={disabled || saving}
         aria-label="Journal entry"
         data-gramm="false"
       />
@@ -58,7 +66,7 @@ export default function JournalEntryForm() {
           {error}
         </p>
       )}
-      <button onClick={requestSave} disabled={saving || !content.trim()}>
+      <button onClick={requestSave} disabled={disabled || saving || !content.trim()}>
         {saving ? "Saving…" : error ? "Retry Save" : "Save entry"}
       </button>
 

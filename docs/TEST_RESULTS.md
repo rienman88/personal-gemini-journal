@@ -14,7 +14,7 @@ Every runnable manual test uses the same five-column pattern:
 
 Status notation: [x] PASSED means evidence already exists in this repository or staging record. [ ] Pass: ______ is intentionally blank for the operator. READY TO RUN means the test is documented but has not been claimed as passed.
 
-The original recorded plain-entry test occurred on September 2, 2026 at 10:27:42 PM. The timezone was not included in the original record. The complete feature-to-evidence map is in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md). Deployment commands and actual cloud history are in [SELF_DEPLOYMENT_GUIDE.md](SELF_DEPLOYMENT_GUIDE.md) and [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md).
+The original recorded plain-entry test occurred on September 2, 2026 at 10:27:42 PM. The timezone was not included in the original record. The complete feature-to-evidence map is in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md). The public deployment procedure is in [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) and [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md). Private deployment history is intentionally not required for this public test document.
 
 ## Manual verification checklist
 
@@ -92,6 +92,7 @@ Use a dedicated test account and an emulator or isolated staging project for des
 | 58 | Grammarly Suppression | Inspect the journal textarea and reply input in DevTools with Grammarly enabled. | Both inputs contain data-gramm=false; Grammarly does not alter saved text or create application errors. | [x] PASSED - source inspection; [ ] Extension-enabled browser recheck |
 | 59 | Network and Server Error Recovery | Turn on offline mode or force a 500 response during an entry/reply save, then retry the same draft. | A recoverable error appears, the UI does not claim a false save, the draft remains retryable, and retry does not duplicate data. | [ ] Pass: ______ READY TO RUN - operator |
 | 60 | Deployment Rollback | Deploy a harmless test revision, route traffic to the known-good revision, verify / and /health, then restore traffic. | Traffic returns to the known-good immutable revision without deleting rules, secrets, images, or data. | [ ] Pass: ______ READY TO RUN - operator |
+| 61 | AI Journal / Private Journal Mode | Sign in, switch from AI Journal to Private Journal, then save: Private reflection about today's work. For the AI path, switch back and save a separate ordinary entry. | The preference is saved per UID. A private entry saves with `journalMode=private` and `aiUsed=false`, does not open Privacy Guardian, creates no Gemini conversation, and does not show derived AI fields. AI Journal preserves the existing Gemini flow. | [x] PASSED - journal mode policy tests and browser smoke; [ ] Live preference/API persistence recheck |
 
 ## Manual execution rules
 
@@ -106,17 +107,18 @@ Use a dedicated test account and an emulator or isolated staging project for des
 | Area | Verification Result |
 | --- | --- |
 | Root and server builds | Passed on 2026-09-04 |
-| Firebase Auth and Firestore emulator suite | 34 passed, 2 intentionally pending on 2026-09-04 |
+| Firebase Auth and Firestore emulator suite | 38 passed, 2 intentionally pending on 2026-09-05 |
 | Privacy Guardian patterns and redaction | Passed for AWS key, Google API key, generic secret assignment, email, phone, and SSN test cases |
 | Gemini resilience | Passed for schema retry, model fallback, non-retryable failure, empty response, and bounded attempts |
 | Firestore security rules | Passed for owner isolation, unauthenticated denial, client-write denial, usage/audit denial, deleted conversation denial, and retention denial |
 | Retention lifecycle | Passed for HMAC actor hash, tombstone construction, entry redaction, and conversation redaction |
 | Worker authentication | Passed for missing configuration, missing/wrong token, and correct token |
 | App Check middleware | Passed for local bypass and enforced missing-token rejection |
-| Browser smoke | 4 passed on 2026-09-04: Privacy Guardian actions, individual deletion, integrity-count display, Calendar v1 |
+| Browser smoke | 5 passed on 2026-09-05: Privacy Guardian actions, individual deletion, integrity-count display, Calendar v1, and AI Journal / Private Journal mode |
+| AI mode policy | Passed: legacy entries default to AI Journal; Private Journal disables Gemini, Privacy Guardian, token budget, conversation creation, and replies |
 | Deployment script and cloud resources | PowerShell syntax passed; App Check-enforced Cloud Run revision, dedicated identities, corrected Secret Manager bindings, label, ready retention index, and Scheduler are live; live browser token testing and controlled due-record redaction remain operator gates |
 
-The current local verification result as of 2026-09-04 is 34 server tests passing, 2 intentionally pending, and 4 browser smoke tests passing. The browser smoke suite passed against a separately verified Vite server using `PLAYWRIGHT_REUSE_SERVER=1`; this workaround is documented for Windows child-server lifecycle timeouts. The first emulator attempt selected Java 11, below the current Firebase CLI requirement of Java 21 or newer. Rerunning with the installed Java 26 runtime produced the stated result. The pending tests are the live Gemini authenticity check without GEMINI_API_KEY_TEST and the named route-level idempotency specification awaiting a complete route harness.
+The current local verification result as of 2026-09-05 is 38 server tests passing, 2 intentionally pending, and 5 browser smoke tests passing. The browser smoke suite passed against a separately verified Vite server using `PLAYWRIGHT_REUSE_SERVER=1`; this workaround is documented for Windows child-server lifecycle timeouts. The first emulator attempt selected Java 11, below the current Firebase CLI requirement of Java 21 or newer. Rerunning with the installed Java 26 runtime produced the stated result. The pending tests are the live Gemini authenticity check without GEMINI_API_KEY_TEST and the named route-level idempotency specification awaiting a complete route harness. AI mode policy tests also verify that Private Journal cannot enter Gemini processing.
 
 The previous Vite production build warning about a minified bundle above 500 kB was resolved by splitting Firebase vendor code; the current build completes without that warning.
 
@@ -134,10 +136,11 @@ The previous Vite production build warning about a minified bundle above 500 kB 
 | App Check, COOP, CORS, health, worker, Scheduler | 50-54 |
 | Docker, Secret Manager, IAM, Cloud Run, rollback | 55-56, 60 |
 | Accessibility, Grammarly, error recovery | 57-59 |
+| AI Journal / Private Journal processing choice | 61 |
 
 ## Related verification records
 
 - [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md) tracks the human usability walkthrough and browser smoke coverage.
-- [SELF_DEPLOYMENT_GUIDE.md](SELF_DEPLOYMENT_GUIDE.md) records the implementation-specific deployment workflow and resolved deployment issues.
+- [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) records the public-safe setup order and document responsibilities.
 - [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) maps LLM risks to these manual test IDs.
 - [TECHNICAL_WRITEUP.md](TECHNICAL_WRITEUP.md) explains the architecture and security model.

@@ -20,6 +20,7 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 - Every entry and conversation turn is hash-chained for tamper evidence.
 - Deleting one entry or the entire journal hides it immediately, preserves the active chain with a tombstone, retains protected records for 30 days, and then redacts readable journal material while retaining minimal cryptographic and audit metadata.
 - The calendar and related-entry graph are derived from the live entry snapshot, so deletion cannot leave orphaned UI state or a second calendar data path.
+- A per-user AI Journal / Private Journal switch gives the user control over whether new entries use Gemini. Private entries retain the normal authenticated storage, hash, audit, calendar, deletion, and retention controls while making no Gemini or token-budget call.
 
 ## Complete feature inventory
 
@@ -29,6 +30,7 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 | User isolation | Verified Firebase ID token; server derives `req.uid`; Firestore rules scope reads to `/users/{uid}/...`; cross-user and unauthenticated reads denied | `server/src/middleware/auth.ts`, `firestore.rules` |
 | App authenticity | Firebase App Check client initialization with score-based reCAPTCHA Enterprise; token sent as `X-Firebase-AppCheck`; Admin SDK verification on every `/api` route when `ENFORCE_APP_CHECK=true` | `web/src/firebase.ts`, `web/src/lib/api.ts`, `server/src/middleware/appCheck.ts` |
 | Entry creation | Bounded 8,000-character input, required client request ID, idempotent duplicate protection, server Privacy Guardian scan, Gemini analysis, Firestore persistence | `server/src/routes/journal.ts` |
+| AI processing choice | Authenticated preference under `users/{uid}/meta/preferences`; server-enforced AI or Private Journal branch; each entry records `journalMode` and `aiUsed` | `server/src/routes/journal.ts`, `server/src/lib/journalMode.ts`, `web/src/components/JournalModeToggle.tsx` |
 | AI analysis | Structured summary, up to five topics, one or two closed-set categories, and one reflection question | `server/src/lib/geminiClient.ts` |
 | Multi-turn conversation | Reply input bounded to 2,000 characters; each entry has an isolated conversation subcollection; full thread is displayed and latest 10 turns are sent to Gemini | `server/src/routes/journal.ts`, `web/src/components/ConversationThread.tsx` |
 | Gemini resilience | Six-model fallback ladder; three structured-output attempts per model, for at most 18 structured attempts; plain replies use the ladder; malformed or unavailable AI never prevents RAW save | `server/src/lib/geminiClient.ts` |
@@ -51,20 +53,21 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 
 1. The visitor sees the sign-in screen and authenticates with Google.
 2. Firebase publishes the auth state; the dashboard renders only for the signed-in user.
-3. The user writes a journal entry and selects **Save entry**.
-4. The browser may preview sensitive content, but the server performs the trusted Privacy Guardian scan.
-5. If a match exists, the modal offers **Redact before sending to Gemini**, **Send as-is anyway**, or cancel. Either decision unmounts the modal immediately; the network save continues with the selected policy.
-6. Gemini returns a structured summary, topics, categories, and reflection question, or the entry is still saved with `geminiOk: false` if the AI ladder fails.
-7. The entry appears in the live feed with RAW text, DERIVED output, category pills, related entries, integrity shortcode, and an isolated conversation thread.
-8. A reply follows the same Privacy Guardian boundary and is persisted as a user turn plus an optional model turn.
-9. Security Activity shows metadata-only events. Integrity verification checks the entry and conversation chains.
-10. The side calendar marks dates from the same live entries. Selecting a date navigates to the first matching entry and shows a count when multiple entries share a date.
-11. Removing one entry or all entries hides the journal content and calendar markers immediately. The audit record remains.
-12. After 30 days, the scheduled worker replaces retained content, reflection, summary, and conversation text with `Deleted`, removes sensitive derived metadata, and preserves minimal retention, deletion, actor-hash, timestamp, and cryptographic fields.
+3. The user chooses AI Journal or Private Journal. The choice is saved per UID and the server remains authoritative for processing.
+4. The user writes a journal entry and selects **Save entry**.
+5. The browser may preview sensitive content in AI Journal mode, but the server performs the trusted Privacy Guardian scan before Gemini.
+6. If an AI-mode match exists, the modal offers **Redact before sending to Gemini**, **Send as-is anyway**, or cancel. Either decision unmounts the modal immediately; the network save continues with the selected policy.
+7. Gemini returns a structured summary, topics, categories, and reflection question for AI Journal entries, or the entry is still saved with `geminiOk: false` if the AI ladder fails. Private Journal entries skip this branch and are labeled AI not used.
+8. The entry appears in the live feed with RAW text, mode provenance, optional DERIVED output, category pills, related entries, integrity shortcode, and an isolated conversation thread when applicable.
+9. A reply follows the same Privacy Guardian boundary for AI entries; Private Journal entries do not enable Gemini replies.
+10. Security Activity shows metadata-only events. Integrity verification checks the entry and conversation chains.
+11. The side calendar marks dates from the same live entries. Selecting a date navigates to the first matching entry and shows a count when multiple entries share a date.
+12. Removing one entry or all entries hides the journal content and calendar markers immediately. The audit record remains.
+13. After 30 days, the scheduled worker replaces retained content, reflection, summary, and conversation text with `Deleted`, removes sensitive derived metadata, and preserves minimal retention, deletion, actor-hash, timestamp, and cryptographic fields.
 
 ## Architecture and trust boundaries
 
-![Personal Gemini Journal architecture](docs/ARCHITECTURE.svg)
+![Personal Gemini Journal architecture](ARCHITECTURE.svg)
 
 The diagram is versioned with the application and reflects the actual source and deployment boundaries. It is a visual companion to the trust-boundary description below, not a proposed future architecture.
 
@@ -74,6 +77,7 @@ Browser
   Firebase App Check / reCAPTCHA Enterprise token
   Firestore owner-scoped realtime reads
   React dashboard, calendar, audit drawer, modals
+  AI Journal / Private Journal mode toggle
         |
         | Bearer Firebase ID token + X-Firebase-AppCheck
         v
@@ -91,6 +95,7 @@ Cloud Firestore
   users/{uid}/retentionEntries
   users/{uid}/retentionTurns
   users/{uid}/meta/chain
+  users/{uid}/meta/preferences
   users/{uid}/usage/{UTC-date}
   users/{uid}/audit
 
@@ -107,7 +112,9 @@ All `/api` routes require a verified Firebase ID token. In production, they also
 
 | Method | Route | Behavior |
 | --- | --- | --- |
-| `POST` | `/api/entries` | Create an entry, apply rate/token controls and Privacy Guardian, call Gemini, persist RAW/DERIVED data, seed reflection turn, audit the result |
+| `GET` | `/api/preferences` | Return the authenticated user's current journal mode, defaulting to AI Journal for existing users |
+| `POST` | `/api/preferences` | Validate and persist `ai` or `private` for the authenticated UID and record a metadata-only mode-change audit event |
+| `POST` | `/api/entries` | Create an entry using the server-enforced mode; AI mode applies rate/token controls and Privacy Guardian before Gemini, while Private Journal persists without Gemini or AI-derived fields |
 | `POST` | `/api/entries/:entryId/reply` | Append a user reply, enforce active-entry state, use bounded context, call Gemini, persist user/model turns, audit the result |
 | `POST` | `/api/verify-integrity` | Recalculate entry and conversation chain linkage for the authenticated user, returning total records checked, pending-redaction count, and visible-entry count |
 | `POST` | `/api/entries/:entryId/delete` | Archive one entry and its conversation, write a tombstone, remove active turns, return retention deadline |
@@ -147,6 +154,7 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 - A client cannot write fake entries, conversations, usage, audit events, or retention records directly through Firestore rules.
 - Deleted conversations and backend-only retention records are not readable by the browser.
 - Gemini never receives a secret or PII match when the user chooses the redaction action.
+- Private Journal entries never enter the Gemini or token-budget path; their per-entry mode fields make that provenance visible and durable.
 - Gemini output cannot authorize requests, execute tools, or write Firestore.
 - A failed Gemini call does not discard the user's RAW entry or reply.
 - Hash-chain verification detects broken active content and preserves deleted chain linkage with tombstones.
@@ -172,8 +180,10 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 | Root production build | Passed |
 | Server TypeScript build | Passed |
 | App Check middleware tests | 2 passed |
-| Emulator-backed server suite | 34 passed, 2 intentionally pending |
-| Browser smoke suite | 4 passed |
+| Emulator-backed server suite | 38 passed, 2 intentionally pending |
+| Browser smoke suite | 5 passed |
+| AI mode policy tests | AI default compatibility and Private Journal no-Gemini policy passed |
+| AI mode browser smoke | Toggle switches modes; Private Journal sensitive text saves without opening Privacy Guardian |
 | Privacy Guardian modal smoke | Both Redact and Send as-is unmount immediately while the request remains pending |
 | Individual deletion smoke | Modal closes after server confirmation and reports removal |
 | Calendar smoke | Marked dates, counts, navigation, and 375px overflow behavior pass |
@@ -213,9 +223,9 @@ Full evidence and boundaries are in [TEST_RESULTS.md](TEST_RESULTS.md).
 
 - [x] README reflects the current feature set, architecture, local verification, deployment path, and limitations.
 - [x] HOW_IT_WORKS reflects authentication, App Check, entry/reply behavior, calendar, related entries, audit activity, deletion, retention, and failure states.
-- [x] IMPLEMENTATION_GUIDE and SELF_DEPLOYMENT_GUIDE reflect Firebase, Secret Manager, Cloud Run identity, App Check registration, scheduler setup, and Academy submission steps.
+- [x] IMPLEMENTATION_GUIDE and CLOUD_IMPLEMENTATION_RUNBOOK reflect Firebase, Secret Manager, Cloud Run identity, App Check registration, scheduler setup, and Academy submission steps.
 - [x] DOCKER_DEPLOYMENT_RUNBOOK records the actual Docker build, Cloud Run image deployment, runtime secret boundary, rollback, alternatives, errors, and execution checklist.
-- [x] GITHUB_PUBLICATION_CHECKLIST records the repository publication boundary, local-only credential exclusions, dry-run review, and GitHub controls.
+- [x] Public documentation identifies the repository publication boundary and excludes local-only credential material; detailed GitHub operator procedures remain private.
 - [x] TECHNICAL_WRITEUP reflects current routes, middleware, data model, retention lifecycle, tests, and open production verification.
 - [x] CONSTITUTION preserves the current architecture and defines the feature/security contract for Google AI Studio.
 - [x] OWASP_LLM_TOP10_COVERAGE reflects current LLM controls, cross-cutting application controls, and honest limits.
@@ -232,14 +242,14 @@ Evaluate this repository against **Authenticity, Usability, Stability, and Secur
 
 ## Navigation
 
-- [README.md](README.md) - project overview and quick start
+- [README.md](../README.md) - project overview and quick start
 - [HOW_IT_WORKS.md](HOW_IT_WORKS.md) - user-facing behavior and failure modes
 - [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Firebase, Secret Manager, Cloud Run, App Check, scheduler, and submission steps
-- [SELF_DEPLOYMENT_GUIDE.md](SELF_DEPLOYMENT_GUIDE.md) - implementation-specific deploy-from-scratch workflow, verification, rollback, alternatives, and resolved issues
+- [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) - public-safe setup order and document responsibilities
 - [TECHNICAL_WRITEUP.md](TECHNICAL_WRITEUP.md) - implementation rationale and deeper engineering detail
 - [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) - actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log
-- [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) - actual Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error, rotation, and verification record
-- [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md) - repository publication boundary, credential scan, dry run, included manifest, and GitHub controls
+- [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) - implementation-specific Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error, rotation, and verification workflow with safe operator record templates
+- [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) - public-safe setup order and repository publication boundary
 - [CONSTITUTION.md](CONSTITUTION.md) - Google AI Studio security instructions
 - [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) - LLM threat coverage and limits
 - [TEST_RESULTS.md](TEST_RESULTS.md) - manual and automated evidence

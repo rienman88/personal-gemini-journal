@@ -2,13 +2,15 @@
 
 This guide maps the [Google Cloud Gen AI Academy APAC Edition, Cohort 3](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage) ideathon requirements to this repository. The application code is hand-written and locally verified; the Google AI Studio, Firebase Console, Google Cloud, Cloud Run, GitHub/GitLab, social post, and Academy dashboard steps remain external actions.
 
+Use [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) for the recommended order of the AI Studio, Docker, Firebase, Cloud Run, verification, publication, and submission documents.
+
 For an evaluator-facing description of every implemented feature and its evidence, use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md).
 
 ## Operating recommendation
 
 The repository now includes the production hardening path for the three material gaps: a dedicated Cloud Run service account, a daily retention scheduler, and Firebase App Check on the custom API. Run that path after the external Firebase and Google Cloud prerequisites are ready, then complete the live verification checklist.
 
-The actual target project has now been provisioned through the Docker -> Cloud Build -> Artifact Registry -> Cloud Run path. The live staging revision, corrected Secret Manager versions, scheduler state, serialization fixes, and remaining production gates are recorded in [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md); this guide does not replace that execution record.
+The repository's supported deployment path is Docker -> Cloud Build -> Artifact Registry -> Cloud Run. Use [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) for the container procedure and [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) for the reusable cloud configuration, verification, rollback, and safe operator record template. The public-safe document order is in [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md).
 
 ## 1. Requirements and current implementation
 
@@ -25,6 +27,7 @@ The repository currently provides:
 - Firebase App Check in the browser, with Admin SDK verification on every authenticated API request in the production-enforced deployment; it is disabled only for emulator development or an explicitly labeled staging bootstrap.
 - A repeatable provisioning script for the dedicated Cloud Run service account, least-privilege IAM, App Check configuration, Secret Manager bindings, challenge label, and retention scheduler.
 - Google Sign-In popup/redirect authentication, explicit Firebase browser-local persistence for trusted-device sessions, sign-out, owner-scoped realtime journal reads, and server-only writes. This uses no custom application session cookie; shared or public devices must be signed out manually.
+- User-controlled AI Journal / Private Journal mode persisted under the authenticated user's preferences. Private Journal preserves RAW content, hashes, audit metadata, deletion, retention, and calendar behavior while skipping Gemini, token usage, derived fields, and replies.
 - Entry and reply idempotency, input limits, rate limiting, daily token budgets, and clear failure recovery.
 - Structured Gemini analysis, six-model fallback, three bounded schema attempts per model (18 maximum structured attempts), multi-turn context limits, RAW/DERIVED labeling, and model-outage persistence.
 - Deterministic Privacy Guardian detection for AWS keys, Google API keys, generic secrets, email, phone, and US SSN patterns on both entries and replies.
@@ -112,13 +115,13 @@ npm run test:smoke
 npx --yes firebase-tools@latest emulators:exec --only firestore,auth "npm test --prefix server"
 ```
 
-Current recorded result: the build passes, the browser smoke suite has 4 passing tests, and the emulator-backed server suite has 34 passing and 2 intentionally pending tests. The pending tests are the live Gemini authenticity check without `GEMINI_API_KEY_TEST` and the named route-level idempotency specification awaiting a complete route harness.
+Current recorded result: the build passes, the browser smoke suite has 5 passing tests, and the emulator-backed server suite has 38 passing and 2 intentionally pending tests. The pending tests are the live Gemini authenticity check without `GEMINI_API_KEY_TEST` and the named route-level idempotency specification awaiting a complete route harness. AI mode policy tests additionally verify the server-enforced Private Journal no-Gemini branch.
 
-The original manual system verification record in [TEST_RESULTS.md](TEST_RESULTS.md) contains 9 of 9 passed checks covering entry creation, multi-turn replies, authentication persistence, Privacy Guardian on entries and replies, integrity verification, audit activity, category clustering, and raw Firestore inspection. The same file now contains the expanded feature-by-feature manual matrix for deletion, retention, App Check, deployment, accessibility, and recovery. The automated evidence also covers deletion lifecycle logic, App Check middleware, Firestore isolation, modal behavior, and Calendar v1. This is application evidence; it does not replace final production checks below.
+The original manual system verification record in [TEST_RESULTS.md](TEST_RESULTS.md) contains 9 of 9 passed checks covering entry creation, multi-turn replies, authentication persistence, Privacy Guardian on entries and replies, integrity verification, audit activity, category clustering, and raw Firestore inspection. The same file now contains the expanded feature-by-feature manual matrix for deletion, retention, App Check, deployment, accessibility, recovery, and AI mode. The automated evidence also covers deletion lifecycle logic, App Check middleware, Firestore isolation, modal behavior, Calendar v1, and the server-enforced AI/private policy. This is application evidence; it does not replace final production checks below.
 
 ## 5. Docker and Cloud Run deployment
 
-The implementation-specific self-deployment sequence is maintained in [SELF_DEPLOYMENT_GUIDE.md](SELF_DEPLOYMENT_GUIDE.md), the executable Docker procedure is maintained in [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md), and the actual Google Cloud execution record is maintained in [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md). The root `Dockerfile` builds the Vite frontend and TypeScript server into one lean Node.js runtime image. `cloudbuild.yaml` supplies only public Firebase/App Check build values, pushes an immutable-tagged image to Artifact Registry, and the provisioning script deploys that image.
+The executable Docker procedure is maintained in [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md), and the reusable Google Cloud configuration and verification workflow is maintained in [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md). The root `Dockerfile` builds the Vite frontend and TypeScript server into one lean Node.js runtime image. `cloudbuild.yaml` supplies only public Firebase/App Check build values, pushes an immutable-tagged image to Artifact Registry, and the provisioning script deploys that image.
 
 The provisioning script creates separate `personal-gemini-journal-build` and `personal-gemini-journal-run` service accounts. The build identity can build and push the image, and the provisioning path does not grant it runtime secret access. The runtime identity can access Firestore and the three named Secret Manager values but has no image-build role. Inspect inherited IAM if either account already existed.
 
@@ -198,7 +201,7 @@ Re-run the production smoke flow after changing the service account or enabling 
 
 ## 7. GitHub and Academy submission assets
 
-Use [GITHUB_PUBLICATION_CHECKLIST.md](GITHUB_PUBLICATION_CHECKLIST.md) as the source-of-truth repository publication procedure. It records the current local-only files, included source manifest, path-only credential scan, dry-run commands, GitHub controls, and the distinction between publishing source and deploying Cloud Run. Before publishing, inspect the proposed file list and confirm that `.env`, `.env.local`, `node_modules`, build output, emulator files, and keys are excluded.
+Before publishing, inspect the proposed file list and confirm that `.env`, `.env.local`, `node_modules`, build output, emulator files, service-account keys, and deployment-only material are excluded. The detailed GitHub publication procedures are intentionally kept private; publishing source does not deploy Cloud Run.
 
 ```powershell
 git init
@@ -219,8 +222,6 @@ The repository should include:
 - `Dockerfile`
 - `cloudbuild.yaml`
 - `DOCKER_DEPLOYMENT_RUNBOOK.md`
-- `SELF_DEPLOYMENT_GUIDE.md`
-- `GITHUB_PUBLICATION_CHECKLIST.md`
 - `CLOUD_IMPLEMENTATION_RUNBOOK.md`
 - The `web/` and `server/` source trees
 

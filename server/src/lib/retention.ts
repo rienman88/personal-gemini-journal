@@ -54,6 +54,8 @@ export function buildEntryTombstone(
   return {
     uid,
     clientRequestId: typeof original.clientRequestId === "string" ? original.clientRequestId : null,
+    journalMode: original.journalMode === "private" ? "private" : "ai",
+    aiUsed: original.aiUsed === true,
     createdAt: typeof original.createdAt === "string" ? original.createdAt : null,
     prevHash: typeof original.prevHash === "string" ? original.prevHash : null,
     hash: typeof original.hash === "string" ? original.hash : null,
@@ -73,6 +75,8 @@ export function buildRedactedEntry(
   return {
     uid,
     entryId,
+    journalMode: original.journalMode === "private" ? "private" : "ai",
+    aiUsed: original.aiUsed === true,
     createdAt: typeof original.createdAt === "string" ? original.createdAt : null,
     deletedAt: original.deletedAt ?? null,
     redactedAt,

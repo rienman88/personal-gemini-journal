@@ -22,6 +22,10 @@ The application separates the user's original words from Gemini's interpretation
 
 ## Example scenarios
 
+### AI Journal or Private Journal
+
+The dashboard includes a per-user journal mode switch. **AI Journal** keeps the normal Gemini experience: Privacy Guardian, structured summaries, topics, categories, reflections, and replies. **Private Journal** saves the user's RAW entry with its hash, audit metadata, calendar date, and normal deletion lifecycle, but the server does not call Gemini, spend Gemini tokens, create derived insight, or enable AI replies. The selected mode is stored on the preference document and stamped on each entry, so changing the switch never rewrites older entries.
+
 **A normal reflection.** You write about an exhausting workday. Gemini returns a concise summary, categorizes it as `work`, and asks a follow-up question. Your reply stays inside that entry's conversation.
 
 **A sensitive value in a reply.** You paste a string that resembles an AWS key into the fifth reply of a conversation. Privacy Guardian runs again on that reply, offers the same two choices, and records the detection without changing the RAW text stored in Firestore.
@@ -30,6 +34,8 @@ The application separates the user's original words from Gemini's interpretation
 
 **Deleting an entry.** The entry, its conversation turns, and its calendar marker disappear immediately. The server first moves the full record to backend-only retention storage, then leaves a minimal tombstone in the active hash chain. After 30 days, the retention worker replaces retained journal and conversation text with `Deleted`, removes sensitive derived metadata, and keeps only minimal deletion, timestamp, and hash metadata. The audit record remains because it is a security record, not journal content.
 
+**Choosing Private Journal.** A user can save a sensitive or ordinary thought without sending it to Gemini. This is a processing choice, not a claim that the trusted Cloud Run backend or privileged Google Cloud operators cannot access Firestore data.
+
 ## Security boundaries
 
 - Firebase ID tokens are verified by the Express server. The server derives the user ID from the verified token, never from a request body field.
@@ -37,6 +43,7 @@ The application separates the user's original words from Gemini's interpretation
 - Firestore rules allow reads only within `users/{uid}/...` for the matching authenticated owner and deny client writes.
 - The Admin SDK performs server-side writes for entries, conversations, metadata, usage counters, audits, and protected retention records. The browser cannot read or write retention collections.
 - Gemini output is display-only. It cannot authorize a request, execute a tool, or write to Firestore directly.
+- Private Journal is enforced before Gemini and token-budget work on the server. The browser switch is a usability control; the server-side preference and per-entry mode are the authority.
 - The Gemini key is a server-side runtime secret in production and is never bundled into the frontend.
 - Entries and conversation turns are hash-chained so later modifications are detectable through the integrity endpoint.
 - Deleted entries preserve `prevHash` and `hash` as tombstones so deletion does not break verification of later entries. Replies to a deleting or deleted entry return `410` and do not create new turns.

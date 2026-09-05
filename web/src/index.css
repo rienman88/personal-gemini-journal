@@ -347,6 +347,10 @@ button.link-button {
   background: var(--derived-bg);
   color: var(--ui-text);
 }
+.pill-private {
+  background: #e7e0ef;
+  color: #5d4776;
+}
 
 .derived-block {
   background: var(--derived-bg);
@@ -360,6 +364,17 @@ button.link-button {
   letter-spacing: 0.06em;
   color: #7a7669;
   margin: 0 0 0.4rem;
+}
+.private-block {
+  background: #eee8f4;
+  border-left: 3px solid #6e538b;
+  border-radius: 2px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+.private-block p:last-child,
+.private-conversation p:last-child {
+  margin-bottom: 0;
 }
 .topics {
   font-size: 0.8rem;
@@ -405,6 +420,11 @@ button.link-button {
 .reply-row input {
   flex: 1;
   font-size: 0.9rem;
+}
+.private-conversation {
+  background: #f2edf6;
+  border-left: 3px solid #6e538b;
+  padding: 0.75rem 1rem;
 }
 
 .empty-state {
@@ -565,6 +585,77 @@ button.link-button {
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 12px var(--paper-shadow);
+}
+.journal-mode-control {
+  background: var(--paper);
+  border-radius: 3px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px var(--paper-shadow);
+  border: 1px solid var(--line);
+}
+.journal-mode-control h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.mode-eyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--flagged);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+}
+.mode-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+.mode-option {
+  color: #7a7669;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mode-option.active {
+  color: var(--ink);
+  font-weight: 700;
+}
+.mode-switch {
+  width: 3rem;
+  height: 1.6rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #d8d2c4;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s ease;
+}
+.mode-switch.is-ai {
+  background: var(--verified);
+}
+.mode-switch.is-private {
+  background: var(--flagged);
+}
+.mode-switch-thumb {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--paper);
+  transform: translateX(0);
+  transition: transform 0.15s ease;
+}
+.mode-switch.is-ai .mode-switch-thumb {
+  transform: translateX(1.35rem);
+}
+.mode-status {
+  margin: 0.75rem 0 0;
+  color: var(--ui-text);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .security-activity-card {

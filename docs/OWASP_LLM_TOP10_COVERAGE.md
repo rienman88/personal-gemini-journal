@@ -1,6 +1,6 @@
 # OWASP Top 10 for LLM Applications - Actual Coverage
 
-Every control below was checked against the implementation in this repository. Manual execution instructions are in [TEST_RESULTS.md](TEST_RESULTS.md), steps 17-60. A manual ID is an executable check, not a claim that the check has already passed. The verification status in TEST_RESULTS distinguishes existing evidence from operator-only or final-production work.
+Every control below was checked against the implementation in this repository. Manual execution instructions are in [TEST_RESULTS.md](TEST_RESULTS.md), steps 17-61. A manual ID is an executable check, not a claim that the check has already passed. The verification status in TEST_RESULTS distinguishes existing evidence from operator-only or final-production work.
 
 This document covers the LLM-specific layer. The broader application controls are documented in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), including Firebase Auth, Firebase App Check, Firestore rules, hash chains, audit events, deletion retention, Cloud Run IAM, Secret Manager, and Scheduler.
 
@@ -21,6 +21,8 @@ This document covers the LLM-specific layer. The broader application controls ar
 - Manual verification: Steps 25 through 28 cover both user decisions on entries and replies; Step 58 verifies Grammarly does not alter the saved text.
 - Manual verification: Step 29 checks that an AI failure does not discard or expose the RAW content.
 - Honest limit: Base64, homoglyph, obfuscated, encoded, and novel secrets can evade deterministic patterns. This is an explicit boundary, not a completed defense claim.
+
+Private Journal is an additional user-controlled disclosure boundary: when the authenticated preference is `private`, the server does not call Gemini, does not run the Gemini-bound Privacy Guardian decision path, and does not create a conversation. This reduces disclosure risk by avoiding model transmission altogether, but it does not replace authentication, App Check, Firestore isolation, or the trusted-runtime boundary.
 
 ## LLM03: Supply Chain - addressed by deployment practice
 
@@ -77,6 +79,7 @@ This document covers the LLM-specific layer. The broader application controls ar
 - Per-user request rate limit: eight requests per minute with a 429 response after the limit.
 - Per-user daily token budget: 50,000 tokens, including retries and failed model attempts.
 - Firebase App Check can reject scripted requests before the journal handler when enforcement is enabled; it is a secondary abuse signal, not a replacement for Firebase Auth.
+- The per-user AI Journal / Private Journal choice is enforced server-side. Private Journal avoids Gemini processing and token usage, while still using authenticated storage and request-rate controls.
 - Output tokens are bounded to 512 for analysis and 384 for replies.
 - Inputs are capped at 8,000 characters for entries and 2,000 characters for replies.
 - Conversation context is capped at the latest ten turns.
@@ -95,6 +98,7 @@ This document covers the LLM-specific layer. The broader application controls ar
 | Step 50 | App Check enforcement | Deployed revision rejects missing/invalid App Check with 401 and accepts valid Auth plus App Check. | **Cloud Run enforcement deployed; live browser token test READY TO RUN** |
 | Steps 55-56 | Docker, secrets, identities, and image supply chain | Image/build input contains no server secret; build and runtime access are separated and least-privilege bindings are present. | **PASSED by deployment/code review; clean-machine recheck READY TO RUN** |
 | Step 60 | Release rollback | Traffic can return to a known-good immutable revision without deleting data, rules, or secrets. | **READY TO RUN - OPERATOR** |
+| Step 61 | AI Journal / Private Journal policy | Private Journal persists RAW text and security metadata without Gemini, derived output, token usage, or conversation creation; AI Journal preserves the existing guarded path. | **Policy tests and browser smoke PASSED; live preference persistence READY TO RUN** |
 
 ## What this means for the submission
 
