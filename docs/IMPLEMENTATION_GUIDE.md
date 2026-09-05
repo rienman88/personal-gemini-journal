@@ -234,3 +234,7 @@ Submit through the Academy programme dashboard, which the event page identifies 
 The codelab lists Maps, admin RBAC, and external notifications as optional expansion ideas. They are not part of the current version. Adding one should be a separate scoped change with updated threat modeling, secrets, access control, tests, and documentation.
 
 The current version intentionally does not include semantic vector search or a second calendar collection. The calendar is derived from entries already loaded, which keeps deletion consistent and avoids duplicate state.
+
+### Post-submission hardening decisions
+
+Structured request logging with latency, route, status, model, and sanitized correlation fields is intentionally deferred until after submission; the current metadata-only audit trail already records security events and correlation IDs. Provider abstraction, a repository layer, API Gateway, WAF, distributed abuse scoring, response caching, and full revoked-token checking are also deferred until traffic, compliance, incident response, or provider requirements justify their operational cost and architectural scope. The current threat register and residual-risk decisions are recorded in [THREAT_MODEL.md](THREAT_MODEL.md).

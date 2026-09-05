@@ -16,11 +16,10 @@ import { recordAuditEvent } from "../lib/audit";
 import { computeHash, GENESIS } from "../lib/hashChain";
 import { archiveAndTombstoneEntry, RETENTION_DAYS } from "../lib/retention";
 import { getJournalModePlan, journalModeFromData, parseJournalMode, JournalMode } from "../lib/journalMode";
+import { readBoundedText, MAX_ENTRY_CHARS, MAX_REPLY_CHARS } from "../lib/inputValidation";
 
 export const journalRouter = Router();
 
-const MAX_ENTRY_CHARS = 8000;
-const MAX_REPLY_CHARS = 2000;
 const GEMINI_API_KEY = () => process.env.GEMINI_API_KEY ?? ""; // injected by Cloud Run from Secret Manager at runtime
 
 class EntryDeletedError extends Error {
@@ -87,11 +86,12 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
   const uid = requireUid(req, res);
   if (!uid) return;
 
-  const content = String(req.body?.content ?? "").trim().slice(0, MAX_ENTRY_CHARS);
+  const contentResult = readBoundedText(req.body?.content, "content", MAX_ENTRY_CHARS);
   const clientRequestId = String(req.body?.clientRequestId ?? "");
   const acknowledgedSend = req.body?.acknowledgedSend === true;
 
-  if (!content) return void res.status(400).json({ error: "content is required" });
+  if (!contentResult.ok) return void res.status(400).json({ error: contentResult.error });
+  const content = contentResult.value;
   if (!clientRequestId) return void res.status(400).json({ error: "clientRequestId is required" });
 
   const db = getFirestore();
@@ -217,11 +217,12 @@ journalRouter.post("/entries/:entryId/reply", async (req: AuthedRequest, res: Re
   if (!uid) return;
 
   const { entryId } = req.params;
-  const text = String(req.body?.text ?? "").trim().slice(0, MAX_REPLY_CHARS);
+  const textResult = readBoundedText(req.body?.text, "text", MAX_REPLY_CHARS);
   const clientRequestId = String(req.body?.clientRequestId ?? "");
   const acknowledgedSend = req.body?.acknowledgedSend === true;
 
-  if (!text) return void res.status(400).json({ error: "text is required" });
+  if (!textResult.ok) return void res.status(400).json({ error: textResult.error });
+  const text = textResult.value;
   if (!clientRequestId) return void res.status(400).json({ error: "clientRequestId is required" });
 
   const db = getFirestore();

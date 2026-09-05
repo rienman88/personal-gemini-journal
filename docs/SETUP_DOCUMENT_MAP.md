@@ -18,7 +18,7 @@ The current feature set includes a server-enforced **AI Journal / Private Journa
 | 3 | Docker and image build | [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) | Follow the Dockerfile, Cloud Build, Artifact Registry, staged App Check, and image-release procedure. |
 | 4 | Firebase and Cloud operations | [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) | Follow the generic project-specific setup for Firebase Auth, Firestore, App Check, Secret Manager, gcloud, IAM, Cloud Run, Scheduler, and production verification. |
 | 5 | End-to-end operator flow | [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) | Use the public-safe cloud runbook together with the Docker runbook as the linear deployment path for a new project. |
-| 6 | Verification evidence | [TEST_RESULTS.md](TEST_RESULTS.md), [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) | Execute and record manual tests, browser smoke checks, OWASP coverage, and remaining external gates. |
+| 6 | Verification evidence | [TEST_RESULTS.md](TEST_RESULTS.md), [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md), [THREAT_MODEL.md](THREAT_MODEL.md) | Execute and record manual tests, browser smoke checks, OWASP coverage, threat boundaries, and remaining external gates. |
 | 7 | Evaluation package | [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), [TECHNICAL_WRITEUP.md](TECHNICAL_WRITEUP.md), [HOW_IT_WORKS.md](HOW_IT_WORKS.md) | Give reviewers the feature, architecture, data lifecycle, security boundary, and implementation explanation. |
 | 8 | Public repository | README.md and this map | Publish only the reviewed source allowlist through GitHub or GitLab; private publication checklists are intentionally excluded. |
 | 9 | Video and submission | [VIDEO_SUBMISSION_SCRIPT.md](VIDEO_SUBMISSION_SCRIPT.md) | Record the safe demo and submit the Cloud Run URL, repository, social post, and brief description. |
@@ -93,6 +93,7 @@ These documents are important, but they should be used after setup or for a spec
 | TEST_RESULTS.md | Manual feature and deployment test actions, expected results, and evidence. |
 | USABILITY_CHECKLIST.md | User-facing interaction and browser smoke verification. |
 | OWASP_LLM_TOP10_COVERAGE.md | Security coverage, limitations, and manual security tests. |
+| THREAT_MODEL.md / THREAT_MODEL.svg | Formal attack surface, visual boundaries, mitigations, residual risks, and deferred hardening decisions. |
 | EVALUATION_DOSSIER.md | Reviewer-facing implementation and evaluation summary. |
 | TECHNICAL_WRITEUP.md | Detailed technical rationale and data flow. |
 | HOW_IT_WORKS.md | Plain-language product explanation. |
@@ -116,6 +117,7 @@ Do not use README, evaluation, video, or test narrative text as a substitute for
 - [ ] Verify the dedicated runtime identity, Secret Manager bindings, Scheduler, required label, and App Check enforcement.
 - [ ] Run TEST_RESULTS.md and the production checks in CLOUD_IMPLEMENTATION_RUNBOOK.md.
 - [ ] Review OWASP_LLM_TOP10_COVERAGE.md and record external gates separately.
+- [ ] Review THREAT_MODEL.md and confirm residual risks are represented honestly.
 - [ ] Review the public allowlist and confirm local secrets, generated output, emulator data, and deployment-only material are excluded before making the repository public.
 - [ ] Record the demo using VIDEO_SUBMISSION_SCRIPT.md.
 - [ ] Submit the required Cloud Run URL or walkthrough, social post with #AccelerateAIwithCloudRun, public repository, and brief description through the Academy process.
@@ -130,6 +132,7 @@ Do not use README, evaluation, video, or test narrative text as a substitute for
 - DOCKER_DEPLOYMENT_RUNBOOK.md defines the container build and release path.
 - CLOUD_IMPLEMENTATION_RUNBOOK.md defines the generic cloud operator path and safe execution record.
 - TEST_RESULTS.md defines manual verification actions.
+- THREAT_MODEL.md defines the formal attack surface and residual-risk register.
 - README.md provides the public project overview and entry points.
 - The Academy event page and official codelab define external submission requirements and deadlines.
 

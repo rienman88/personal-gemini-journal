@@ -2,7 +2,7 @@
 
 Every control below was checked against the implementation in this repository. Manual execution instructions are in [TEST_RESULTS.md](TEST_RESULTS.md), steps 17-61. A manual ID is an executable check, not a claim that the check has already passed. The verification status in TEST_RESULTS distinguishes existing evidence from operator-only or final-production work.
 
-This document covers the LLM-specific layer. The broader application controls are documented in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), including Firebase Auth, Firebase App Check, Firestore rules, hash chains, audit events, deletion retention, Cloud Run IAM, Secret Manager, and Scheduler.
+This document covers the LLM-specific layer. The broader application controls are documented in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), including Firebase Auth, Firebase App Check, Firestore rules, hash chains, audit events, deletion retention, Cloud Run IAM, Secret Manager, and Scheduler. The formal cross-boundary threat register is in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## LLM01: Prompt Injection - partially mitigated, not solved
 
@@ -81,7 +81,7 @@ Private Journal is an additional user-controlled disclosure boundary: when the a
 - Firebase App Check can reject scripted requests before the journal handler when enforcement is enabled; it is a secondary abuse signal, not a replacement for Firebase Auth.
 - The per-user AI Journal / Private Journal choice is enforced server-side. Private Journal avoids Gemini processing and token usage, while still using authenticated storage and request-rate controls.
 - Output tokens are bounded to 512 for analysis and 384 for replies.
-- Inputs are capped at 8,000 characters for entries and 2,000 characters for replies.
+- Inputs are trimmed and accepted only up to 8,000 characters for entries and 2,000 characters for replies; oversized requests are rejected with HTTP 400 before Gemini work.
 - Conversation context is capped at the latest ten turns.
 - Manual verification: Step 36 tests the request limiter; Step 37 tests the daily token budget; Step 50 tests final App Check enforcement; Step 54 checks the bounded scheduled worker batch.
 

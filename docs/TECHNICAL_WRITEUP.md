@@ -89,10 +89,11 @@ The application also has independent state and cost boundaries after authenticat
 - `src/lib/geminiClient.ts` — the only file that calls Gemini; the fallback ladder and shared helper (full logic in §6)
 - `src/lib/hashChain.ts` — the one hash primitive reused everywhere something needs to be tamper-evident
 - `src/lib/rateLimiter.ts` — per-user sliding-window limit via a Firestore transaction
+- `src/lib/inputValidation.ts` — shared entry/reply size and empty-value validation
 - `src/lib/audit.ts` — security-event log, separate from journal content
 - `src/lib/retention.ts` — archive, tombstone, and delayed redaction lifecycle
 - `test/appCheck.test.ts` — local enforcement boundary tests for disabled and missing-token cases
-- `test/appCheck.test.ts`, `test/security.test.ts`, `test/stability.test.ts`, `test/retention.test.ts`, `test/authenticity.test.ts` — organized by judging pillar, not by file type
+- `test/appCheck.test.ts`, `test/security.test.ts`, `test/stability.test.ts`, `test/retention.test.ts`, `test/authenticity.test.ts`, `test/inputValidation.test.ts` — organized by judging pillar, not by file type
 
 **`web/`** (React + Vite, built into static files the server hosts):
 - `src/firebase.ts`, `src/lib/api.ts` — client SDK init and an authenticated-fetch wrapper (replaces `httpsCallable` now that the backend is plain Express)
@@ -108,13 +109,13 @@ The application also has independent state and cost boundaries after authenticat
 - `src/components/DeleteEntryModal.tsx` — individual entry deletion confirmation flow
 - `src/components/IntegrityBadge.tsx` — on-demand hash-chain verification
 
-**Root:** `Dockerfile` (multi-stage: builds `web/`, builds `server/`, copies both into a lean runtime image), `cloudbuild.yaml` (explicit Docker build and Artifact Registry push), `scripts/provision-cloud-run.ps1` (separate build/runtime service accounts, least-privilege IAM, App Check build/runtime settings, image deployment, label, and scheduler), `firestore.rules`, `firestore.indexes.json`, `package.json` (orchestrates `web/` + `server/` builds into one `npm start`), `CONSTITUTION.md` (the AI Studio Custom Instructions), `README.md`, `SETUP_DOCUMENT_MAP.md`, `IMPLEMENTATION_GUIDE.md`, `DOCKER_DEPLOYMENT_RUNBOOK.md` (Docker implementation record), `CLOUD_IMPLEMENTATION_RUNBOOK.md` (implementation-specific cloud deployment workflow and safe operator record template), `HOW_IT_WORKS.md` (plain-language version of this document), `USABILITY_CHECKLIST.md`, and `TEST_RESULTS.md` (manual verification evidence). GitHub publication operator guides are intentionally maintained outside the public package.
+**Root:** `Dockerfile` (multi-stage: builds `web/`, builds `server/`, copies both into a lean runtime image), `cloudbuild.yaml` (explicit Docker build and Artifact Registry push), `scripts/provision-cloud-run.ps1` (separate build/runtime service accounts, least-privilege IAM, App Check build/runtime settings, image deployment, label, and scheduler), `firestore.rules`, `firestore.indexes.json`, `package.json` (orchestrates `web/` + `server/` builds into one `npm start`), `CONSTITUTION.md` (the AI Studio Custom Instructions), `README.md`, `SETUP_DOCUMENT_MAP.md`, `IMPLEMENTATION_GUIDE.md`, `THREAT_MODEL.md` (formal security threat register), `DOCKER_DEPLOYMENT_RUNBOOK.md` (Docker implementation record), `CLOUD_IMPLEMENTATION_RUNBOOK.md` (implementation-specific cloud deployment workflow and safe operator record template), `HOW_IT_WORKS.md` (plain-language version of this document), `USABILITY_CHECKLIST.md`, and `TEST_RESULTS.md` (manual verification evidence). GitHub publication operator guides are intentionally maintained outside the public package.
 
 ## 5. How entry creation and multi-turn conversation actually work
 
 `POST /api/entries`, in the exact order the code runs:
 1. Reject if unauthenticated (`req.uid`, never a client field).
-2. Trim and bound input (max 8000 chars); reject empty content or a missing `clientRequestId`.
+2. Trim input, reject empty content, and reject values over 8000 chars; reject a missing `clientRequestId` before any Gemini or persistence work.
 3. **Idempotency check** — if this `clientRequestId` already produced an entry, return that entry instead of writing a duplicate. Protects against a flaky-network double-submit creating two entries.
 4. Read the authenticated user's `users/{uid}/meta/preferences` document. Missing or legacy preference data defaults to AI Journal.
 5. Enforce the per-user request rate limit. Only AI Journal continues to token-budget enforcement.
@@ -207,14 +208,15 @@ Runs entirely client-side, from entries already loaded for the list view — no 
 - `tsc --noEmit` compiles clean on both `server/` and `web/` against the real, installed `@google/genai`, `firebase-admin`, `express`, and React type definitions.
 - `vite build` succeeds; the compiled server was actually run and hit with `curl` — confirmed it serves the real built `index.html` (this caught a real off-by-one in the static-file path during development) and that `/api/entries` returns 401 for both a missing and a garbage auth token.
 - The pure-logic test suite passes: Privacy Guardian detection/redaction (including on replies), the fallback ladder (including both regressions above, now fixed), conversation continuation, and the static no-mock-provider guard.
-- The emulator-backed server suite passes with 38 passing and 2 intentionally pending specs. The passing set includes App Check middleware behavior, retention redaction logic, worker-token authentication, legacy-entry compatibility, Private Journal policy, and Firestore rules isolation for entries, conversation turns, audit records, and retention records.
+- The emulator-backed server suite passes with 41 passing and 2 intentionally pending specs. The passing set includes App Check middleware behavior, input length validation, retention redaction logic, worker-token authentication, legacy-entry compatibility, Private Journal policy, and Firestore rules isolation for entries, conversation turns, audit records, and retention records.
 - The browser smoke suite passes with 5 tests: both Privacy Guardian decisions unmount the modal while the request remains pending, individual deletion closes after confirmation, the integrity badge distinguishes total/pending/visible counts, Calendar v1 marks, counts, and navigates to journal dates without mobile horizontal overflow, and Private Journal saves without opening Privacy Guardian.
 - The original manual execution log records 9 of 9 passed checks across entry creation, multi-turn replies, authentication persistence, Privacy Guardian interception, integrity verification, audit activity, category clustering, and raw Firestore inspection. `TEST_RESULTS.md` now adds the feature-by-feature manual matrix, including AI Journal / Private Journal mode, and marks operator-only checks separately.
 
 The browser smoke tests additionally prove that both Privacy Guardian decisions unmount the modal immediately while the request remains pending, individual deletion closes after server confirmation, Calendar v1 remains usable at 375px width, and the private-mode branch does not open the Privacy Guardian modal for sensitive-looking input.
 
 **Verified staging, with final gates kept explicit:**
-- A real Cloud Run deployment has occurred in the target project. Revision `personal-gemini-journal-00018-qqb` serves image tag `release-20260904-integrity-counts` with `ENFORCE_APP_CHECK=true`, `/health` returns HTTP 200, both current hostnames load their shells, the runtime identity is dedicated, and the required cohort label is present.
+- A real Cloud Run deployment has occurred in the target project. Revision `personal-gemini-journal-00020-lww` serves image tag `release-20260905-ai-toggle` with `ENFORCE_APP_CHECK=true`, `/health` returns HTTP 200, both current hostnames load their shells, the runtime identity is dedicated, and the required cohort label is present.
+- Strict input boundaries are enforced before Gemini or persistence: entries over 8,000 characters and replies over 2,000 characters receive HTTP 400 instead of being silently truncated.
 - Secret Manager bindings, the ready retention index, protected worker route, and enabled Scheduler invocation have been verified in staging. The valid empty-batch worker response and Scheduler HTTP 200 do not substitute for a due-record redaction test.
 - App Check code support and Cloud Run enforcement are complete, but Firebase Console Web-app registration confirmation and final valid-token/missing-token browser testing are external release steps.
 - The live Gemini authenticity test runs only when `GEMINI_API_KEY_TEST` is supplied, and the route-level idempotency test remains a named pending specification until a complete route harness is added.
@@ -228,7 +230,8 @@ The deletion routes hide journal entries immediately but do not physically delet
 
 ## 11. Current open items
 
-- A Cloud Run deployment is live on revision `personal-gemini-journal-00018-qqb` with dedicated IAM bindings, the immutable `release-20260904-integrity-counts` image digest `sha256:136da7af3d052ae1256b530ff509980e0929d529426849210e944d5ead013910`, corrected Secret Manager bindings, the cohort label, a ready retention index, an enabled daily scheduler, and `ENFORCE_APP_CHECK=true`. Manual worker/Scheduler requests return HTTP 200, and both current hostnames pass shell and health checks. Authenticated browser App Check validation, production latency testing, and a controlled due-record redaction run remain explicit release gates.
+- A Cloud Run deployment is live on revision `personal-gemini-journal-00020-lww` with dedicated IAM bindings, the immutable `release-20260905-ai-toggle` image digest `sha256:c0e71934fd9396f6b3c05f56c358c327ff06c6d7dd090ea8eb5280dfcab11160`, corrected Secret Manager bindings, the cohort label, a ready retention index, an enabled daily scheduler, and `ENFORCE_APP_CHECK=true`. Manual worker/Scheduler requests return HTTP 200, and both current hostnames pass shell and health checks. Authenticated browser App Check validation, production latency testing, and a controlled due-record redaction run remain explicit release gates.
+- Full request/latency telemetry is intentionally deferred; security-relevant events already carry correlation IDs, and structured request logging will be added only if operational evidence justifies the additional data and retention surface. Provider abstraction, repository layers, API Gateway, WAF, caching, and full token revocation are likewise deferred rather than claimed as implemented.
 - Firebase App Check must still be confirmed in the Firebase Console Web-app registration and validated through the live browser request path.
 - The live Gemini authenticity test runs only when `GEMINI_API_KEY_TEST` is supplied.
 - The route-level idempotency test remains a named pending specification until a complete route harness is added.

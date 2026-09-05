@@ -6,12 +6,14 @@
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
+| Threat model illustration | [Threat model](docs/THREAT_MODEL.md) with [visual boundary map](docs/THREAT_MODEL.svg) |
 | What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
 | AI Studio Build | [`Special Instructions`](docs/CONSTITUTION.md) |
 | Docker | [`Docker Deployment`](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) |
 | Implementation | [`IMPLEMENTATION GUIDE`](docs/IMPLEMENTATION_GUIDE.md) |
 | Usability checklist | [`Usability test`](docs/USABILITY_CHECKLIST.md) |
 | OWASP Top 10 LLM Coverage | [`OWASP Coverage`](docs/OWASP_LLM_TOP10_COVERAGE.md) |
+| Threat model | [`Security Threat Model`](docs/THREAT_MODEL.md) |
 | Technical reviewer | [`TECHNICAL WRITE-UP`](docs/TECHNICAL_WRITEUP.md) |
 | Manual Verification Checklist | [`TEST RESULTS`](docs/TEST_RESULTS.md) |
 
@@ -38,7 +40,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 - Popup sign-in with redirect fallback, persistent browser-local auth state through Firebase, and explicit sign-out.
 - Each authenticated account receives a Firebase user ID (`uid`) that is used as the ownership boundary for every user-scoped path.
 - User-controlled AI Journal / Private Journal mode is persisted per user; Private Journal saves the entry without any Gemini call or AI reply.
-- Entry input is bounded to 8,000 characters; replies are bounded to 2,000 characters.
+- Entry input is trimmed and strictly limited to 8,000 characters; replies are strictly limited to 2,000 characters, with oversized requests rejected using HTTP 400.
 - Idempotent entry and reply requests use client-generated request IDs.
 - Multi-turn conversations scoped to one journal entry.
 - Server-side Privacy Guardian scanning for secrets and PII before every Gemini call, including replies.
@@ -66,6 +68,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 | Google account sign-in | Firebase Authentication with Google Sign-In, popup flow, redirect fallback, persistent browser-local state, and explicit sign-out. |
 | Per-user identity | Firebase assigns a unique `uid`; API authorization and Firestore paths are derived from the verified token UID, never from a client-supplied owner field. |
 | AI processing choice | A server-enforced per-user preference lets new entries use the full Gemini flow or save as Private Journal entries without Gemini, token usage, summaries, categories, reflections, or replies. |
+| Input validation | Server-side text validation trims accepted input, rejects empty values, and rejects entries over 8,000 characters or replies over 2,000 characters before any Gemini or persistence work. |
 | App Check | Score-based reCAPTCHA Enterprise attestation is sent in `X-Firebase-AppCheck` and verified server-side on protected Express API routes. |
 | Storage segregation | Active entries, conversations, audit events, usage, hash-chain state, and backend-only retention records use separate `users/{uid}/...` paths. |
 | Privacy Guardian | Deterministic sensitive-content interception occurs before Gemini; the user chooses Redact before sending to Gemini or Send as-is anyway. |
@@ -92,7 +95,7 @@ Browser
         |
         v
 Cloud Run: one container
-  CORS allowlist + COOP header + JSON body limit
+  CORS allowlist + COOP header + JSON body limit + strict text validation
   Express API
   Firebase Admin token verification
   App Check verification when enforced
@@ -137,6 +140,7 @@ Firestore client reads are allowed only for the authenticated owner. All journal
 | Privacy-safe deletion | Individual and all-journal deletion archive protected records, preserve chain tombstones, and support delayed redaction |
 | Calendar and relationships | Calendar is derived from entries; related entries use the closed category graph |
 | Required deployment label | The provisioning script applies `dev-tutorial=cloud-run-ai-challenge`; it is present on the current staging Cloud Run service |
+| Threat model | `docs/THREAT_MODEL.md` records the attack surface, mitigations, residual risks, and deferred post-submission hardening |
 
 ## Local setup
 
@@ -227,7 +231,7 @@ Follow [SETUP_DOCUMENT_MAP.md](docs/SETUP_DOCUMENT_MAP.md) first for the complet
 - Firebase Authorized Domains and production smoke testing.
 - GitHub publishing and submission preparation.
 
-Current cloud state: Cloud Run revision `personal-gemini-journal-00018-qqb` is deployed in `asia-southeast1` from image tag `release-20260904-integrity-counts` with immutable Artifact Registry image digest `sha256:136da7af3d052ae1256b530ff509980e0929d529426849210e944d5ead013910`, dedicated build/runtime service accounts, three Secret Manager bindings, the required cohort label, an enabled daily retention scheduler, and `ENFORCE_APP_CHECK=true`. Both Cloud Run hostnames return HTTP 200 for `/health` and `/` and the image is serving 100% of traffic. Authenticated browser App Check success/rejection evidence, a controlled due-record redaction, and final IAM review remain pending.
+Current cloud state: Cloud Run revision `personal-gemini-journal-00020-lww` is deployed in `asia-southeast1` from image tag `release-20260905-ai-toggle` with immutable Artifact Registry image digest `sha256:c0e71934fd9396f6b3c05f56c358c327ff06c6d7dd090ea8eb5280dfcab11160`, dedicated build/runtime service accounts, three Secret Manager bindings, the required cohort label, an enabled daily retention scheduler, and `ENFORCE_APP_CHECK=true`. Both Cloud Run hostnames return HTTP 200 for `/health` and `/` and the image is serving 100% of traffic. Authenticated browser App Check success/rejection evidence, a controlled due-record redaction, and final IAM review remain pending.
 
 The following remain external deliverables until completed in Google Cloud and the Academy programme dashboard:
 

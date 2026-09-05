@@ -8,7 +8,7 @@ Use [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) to see where Docker setup fit
 **Programme:** Google Cloud Gen AI Academy APAC Edition, Cohort 3  
 **Deployment target:** Cloud Run in asia-southeast1  
 **Primary method:** Cloud Build builds the repository Dockerfile, pushes an immutable-tagged image to Artifact Registry, and Cloud Run deploys that image.  
-**Current status:** Cloud Run revision `personal-gemini-journal-00018-qqb` is live from image tag `release-20260904-integrity-counts` with `ENFORCE_APP_CHECK=true`; the retention index is ready, the protected scheduler path returns HTTP 200, and both Cloud Run hostnames return HTTP 200 for the shell and health endpoint. Authenticated browser App Check success/rejection and controlled due-record redaction remain pending evidence.
+**Current status:** Cloud Run revision `personal-gemini-journal-00020-lww` is live from image tag `release-20260905-ai-toggle` with `ENFORCE_APP_CHECK=true`; the retention index is ready, the protected scheduler path returns HTTP 200, and both Cloud Run hostnames return HTTP 200 for the shell and health endpoint. Authenticated browser App Check success/rejection and controlled due-record redaction remain pending evidence.
 
 The image includes the React Auth client configured with Firebase `browserLocalPersistence`; this preserves the trusted-device browser session without adding a custom application cookie or server session. The deployment boundary remains Firebase ID-token verification plus production App Check enforcement on `/api`; sign out is required on shared or public devices.
 

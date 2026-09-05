@@ -29,10 +29,11 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 | Authentication | Google Sign-In through Firebase Authentication; popup first, redirect fallback if popup fails; explicit `browserLocalPersistence` for trusted-device sessions; sign-out; auth-state loading and session listener; no custom application session cookie | `web/src/firebase.ts`, `web/src/components/AuthGate.tsx` |
 | User isolation | Verified Firebase ID token; server derives `req.uid`; Firestore rules scope reads to `/users/{uid}/...`; cross-user and unauthenticated reads denied | `server/src/middleware/auth.ts`, `firestore.rules` |
 | App authenticity | Firebase App Check client initialization with score-based reCAPTCHA Enterprise; token sent as `X-Firebase-AppCheck`; Admin SDK verification on every `/api` route when `ENFORCE_APP_CHECK=true` | `web/src/firebase.ts`, `web/src/lib/api.ts`, `server/src/middleware/appCheck.ts` |
-| Entry creation | Bounded 8,000-character input, required client request ID, idempotent duplicate protection, server Privacy Guardian scan, Gemini analysis, Firestore persistence | `server/src/routes/journal.ts` |
+| Entry creation | Trimmed 8,000-character input with oversized values rejected using HTTP 400, required client request ID, idempotent duplicate protection, server Privacy Guardian scan, Gemini analysis, Firestore persistence | `server/src/routes/journal.ts`, `server/src/lib/inputValidation.ts` |
+| Input validation | Empty values and entries/replies above their explicit limits are rejected before Gemini or persistence work | `server/src/lib/inputValidation.ts`, `server/test/inputValidation.test.ts` |
 | AI processing choice | Authenticated preference under `users/{uid}/meta/preferences`; server-enforced AI or Private Journal branch; each entry records `journalMode` and `aiUsed` | `server/src/routes/journal.ts`, `server/src/lib/journalMode.ts`, `web/src/components/JournalModeToggle.tsx` |
 | AI analysis | Structured summary, up to five topics, one or two closed-set categories, and one reflection question | `server/src/lib/geminiClient.ts` |
-| Multi-turn conversation | Reply input bounded to 2,000 characters; each entry has an isolated conversation subcollection; full thread is displayed and latest 10 turns are sent to Gemini | `server/src/routes/journal.ts`, `web/src/components/ConversationThread.tsx` |
+| Multi-turn conversation | Reply input is strictly limited to 2,000 characters; each entry has an isolated conversation subcollection; full thread is displayed and latest 10 turns are sent to Gemini | `server/src/routes/journal.ts`, `web/src/components/ConversationThread.tsx` |
 | Gemini resilience | Six-model fallback ladder; three structured-output attempts per model, for at most 18 structured attempts; plain replies use the ladder; malformed or unavailable AI never prevents RAW save | `server/src/lib/geminiClient.ts` |
 | Privacy Guardian | Detects AWS keys, Google API keys, generic secret assignments, email, phone, and US SSN patterns; redacts only the Gemini-bound copy; UI modal closes immediately on either decision | `server/src/lib/piiDetector.ts`, `web/src/components/PrivacyGuardianModal.tsx` |
 | RAW/DERIVED separation | User text remains RAW; Gemini summary, topics, categories, reflection, and model replies are DERIVED and labeled in the UI | `server/src/routes/journal.ts`, `web/src/components/JournalList.tsx` |
@@ -159,6 +160,8 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 - A failed Gemini call does not discard the user's RAW entry or reply.
 - Hash-chain verification detects broken active content and preserves deleted chain linkage with tombstones.
 - App Check is fail-closed when explicitly enabled in production.
+- Entry and reply size limits are enforced server-side; oversized values are rejected rather than silently truncated.
+- Request-level structured logging is intentionally deferred: current audit events retain security-relevant correlation IDs, while full request/latency telemetry is reserved for a demonstrated operational need.
 
 ### Limits that must remain visible to an evaluator
 
@@ -167,9 +170,13 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 - App Check code is implemented and the current Cloud Run revision enforces it. Firebase Console Web-app registration confirmation and live valid-token success plus missing/invalid-token rejection remain release verification steps.
 - Retention redaction code and scheduler provisioning are implemented. The live staging worker rejects invalid tokens, returns HTTP 200 for a valid empty batch, and the manual Scheduler invocation also returned HTTP 200; a controlled due-record transformation remains pending.
 - The current worker scheduler uses a static secret header. OIDC Scheduler-to-Cloud Run authentication would be stronger but requires a separate internal/private worker architecture; it is not silently claimed here.
-- A Cloud Run deployment is live on revision `personal-gemini-journal-00018-qqb` from image tag `release-20260904-integrity-counts` with immutable digest `sha256:136da7af3d052ae1256b530ff509980e0929d529426849210e944d5ead013910`, dedicated identities, corrected runtime secret bindings, cohort label, ready retention index, enabled Scheduler, and `ENFORCE_APP_CHECK=true`. Both current hostnames return HTTP 200 for the shell and health endpoint. Authenticated browser App Check success/rejection, production latency, IAM propagation, quotas, billing behavior, and controlled due-record retention transformation remain operator verification gates.
+- A Cloud Run deployment is live on revision `personal-gemini-journal-00020-lww` from image tag `release-20260905-ai-toggle` with immutable digest `sha256:c0e71934fd9396f6b3c05f56c358c327ff06c6d7dd090ea8eb5280dfcab11160`, dedicated identities, corrected runtime secret bindings, cohort label, ready retention index, enabled Scheduler, and `ENFORCE_APP_CHECK=true`. Both current hostnames return HTTP 200 for the shell and health endpoint. Authenticated browser App Check success/rejection, production latency, IAM propagation, quotas, billing behavior, and controlled due-record retention transformation remain operator verification gates.
 - One authenticity test is skipped without `GEMINI_API_KEY_TEST`; one route-level idempotency test remains a named pending specification because it needs a complete route harness.
 - The previous frontend bundle warning above 500 kB was resolved by splitting Firebase vendor code; the current application and Firebase chunks are approximately 161 kB and 461 kB respectively, with no Vite warning.
+
+### Deliberate scope boundary
+
+The submission keeps the current architecture intentionally small. Provider abstraction, repository layers, API Gateway, WAF, caching, and full token revocation are documented as deferred options rather than partially implemented features. This avoids adding moving parts without a measured operational requirement while preserving a clear upgrade path in [THREAT_MODEL.md](THREAT_MODEL.md).
 
 ## Verification evidence
 
@@ -180,7 +187,7 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 | Root production build | Passed |
 | Server TypeScript build | Passed |
 | App Check middleware tests | 2 passed |
-| Emulator-backed server suite | 38 passed, 2 intentionally pending |
+| Emulator-backed server suite | 41 passed, 2 intentionally pending |
 | Browser smoke suite | 5 passed |
 | AI mode policy tests | AI default compatibility and Private Journal no-Gemini policy passed |
 | AI mode browser smoke | Toggle switches modes; Private Journal sensitive text saves without opening Privacy Guardian |
@@ -235,5 +242,6 @@ Evaluate this repository against **Authenticity, Usability, Stability, and Secur
 - [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) - public-safe setup order and repository publication boundary
 - [CONSTITUTION.md](CONSTITUTION.md) - Google AI Studio security instructions
 - [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) - LLM threat coverage and limits
+- [THREAT_MODEL.md](THREAT_MODEL.md) - formal attack surface, mitigations, residual risks, and deferred hardening
 - [TEST_RESULTS.md](TEST_RESULTS.md) - manual and automated evidence
 - [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md) - usability walkthrough and production checks

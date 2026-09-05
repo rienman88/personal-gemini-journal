@@ -19,7 +19,8 @@ Use [SETUP_DOCUMENT_MAP.md](SETUP_DOCUMENT_MAP.md) first when onboarding a new o
 | Docker, Cloud Build, and Artifact Registry | [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) |
 | Firebase, Secret Manager, gcloud, Cloud Run, IAM, Scheduler, and production checks | This runbook |
 | End-to-end public operator flow | This runbook together with [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) |
-| Manual tests and security evidence | [TEST_RESULTS.md](TEST_RESULTS.md), [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md), and [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) |
+| Threat model and security boundary | [THREAT_MODEL.md](THREAT_MODEL.md) |
+| Manual tests and security evidence | [TEST_RESULTS.md](TEST_RESULTS.md), [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md), and [THREAT_MODEL.md](THREAT_MODEL.md) |
 
 Do not duplicate commands across documents when a source-of-truth document already owns that procedure. Use this runbook to connect the cloud configuration and deployment layers.
 
@@ -106,6 +107,7 @@ The following values must be discovered from the operator's own environment and 
 - [ ] Confirm build output, logs, test artifacts, and node_modules are ignored.
 - [ ] Scan tracked files for API keys, bearer tokens, private keys, cookies, user notes, and Firestore exports.
 - [ ] Confirm the public repository contains documentation and templates, not operator secret values.
+- [ ] Review [THREAT_MODEL.md](THREAT_MODEL.md) and confirm residual risks and deferred work are understood before deployment.
 
 ### Firebase
 

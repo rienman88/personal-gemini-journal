@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Personal Gemini Journal threat model</title>
+  <desc id="desc">Threat boundaries and mitigations for the Personal Gemini Journal application.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155" />
+    </marker>
+    <marker id="risk-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#b42318" />
+    </marker>
+    <style>
+      .title { font: 700 30px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 16px Arial, sans-serif; fill: #475569; }
+      .heading { font: 700 19px Arial, sans-serif; fill: #0f172a; }
+      .label { font: 700 15px Arial, sans-serif; fill: #0f172a; }
+      .body { font: 14px Arial, sans-serif; fill: #334155; }
+      .small { font: 13px Arial, sans-serif; fill: #475569; }
+      .risk { font: 700 13px Arial, sans-serif; fill: #b42318; }
+      .box { stroke-width: 2; rx: 14; }
+      .boundary { fill: none; stroke: #64748b; stroke-width: 2; stroke-dasharray: 9 7; rx: 18; }
+      .flow { fill: none; stroke: #334155; stroke-width: 2.5; marker-end: url(#arrow); }
+      .risk-flow { fill: none; stroke: #b42318; stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#risk-arrow); }
+    </style>
+  </defs>
+
+  <rect width="1400" height="900" fill="#f8fafc" />
+  <text x="60" y="58" class="title">Personal Gemini Journal threat model</text>
+  <text x="60" y="88" class="subtitle">Version 1 security boundaries, controls, trusted components, and residual risks</text>
+
+  <rect x="42" y="120" width="360" height="430" class="boundary" />
+  <text x="64" y="154" class="heading">UNTRUSTED CLIENT SURFACE</text>
+  <rect x="68" y="185" width="308" height="115" class="box" fill="#fff7ed" stroke="#f97316" />
+  <text x="90" y="216" class="label">Browser and extensions</text>
+  <text x="90" y="243" class="body">React UI, local drafts, DevTools,</text>
+  <text x="90" y="264" class="body">malicious scripts, and Grammarly</text>
+  <text x="90" y="285" class="body">are never trusted for authorization.</text>
+  <rect x="68" y="330" width="308" height="166" class="box" fill="#eff6ff" stroke="#3b82f6" />
+  <text x="90" y="361" class="label">Firebase client controls</text>
+  <text x="90" y="389" class="body">Google Sign-In and Firebase UID</text>
+  <text x="90" y="412" class="body">Firebase App Check token</text>
+  <text x="90" y="435" class="body">Owner-scoped Firestore reads</text>
+  <text x="90" y="468" class="small">TM-01, TM-02, TM-03</text>
+
+  <rect x="450" y="120" width="500" height="430" class="boundary" />
+  <text x="474" y="154" class="heading">TRUSTED APPLICATION POLICY LAYER</text>
+  <rect x="480" y="185" width="440" height="205" class="box" fill="#ecfdf5" stroke="#10b981" />
+  <text x="505" y="218" class="label">Cloud Run container and Express API</text>
+  <text x="505" y="248" class="body">Verify Firebase bearer token and App Check</text>
+  <text x="505" y="273" class="body">Derive every owner path from verified UID</text>
+  <text x="505" y="298" class="body">Reject empty or oversized input before Gemini</text>
+  <text x="505" y="323" class="body">Privacy Guardian, rate limits, token budgets</text>
+  <text x="505" y="348" class="body">Hash chain, audit events, deletion lifecycle</text>
+  <text x="505" y="375" class="small">TM-01 through TM-10: primary mitigations</text>
+  <rect x="480" y="420" width="440" height="76" class="box" fill="#f1f5f9" stroke="#64748b" />
+  <text x="505" y="451" class="label">Secret Manager references</text>
+  <text x="505" y="476" class="body">Gemini key, deletion HMAC, worker token</text>
+
+  <rect x="1000" y="120" width="355" height="430" class="boundary" />
+  <text x="1024" y="154" class="heading">EXTERNAL / DATA BOUNDARIES</text>
+  <rect x="1030" y="185" width="295" height="110" class="box" fill="#fef2f2" stroke="#ef4444" />
+  <text x="1052" y="216" class="label">Gemini API</text>
+  <text x="1052" y="243" class="body">External processor; receives only</text>
+  <text x="1052" y="264" class="body">policy-approved AI-bound text.</text>
+  <text x="1052" y="285" class="small">TM-04, TM-05, TM-06</text>
+  <rect x="1030" y="325" width="295" height="171" class="box" fill="#f5f3ff" stroke="#8b5cf6" />
+  <text x="1052" y="356" class="label">Cloud Firestore</text>
+  <text x="1052" y="384" class="body">Entries, conversations, audit, usage,</text>
+  <text x="1052" y="407" class="body">chain metadata, and backend retention</text>
+  <text x="1052" y="430" class="body">use separate users/{uid} paths.</text>
+  <text x="1052" y="462" class="small">Rules deny client writes and cross-user reads</text>
+  <text x="1052" y="483" class="small">TM-03, TM-07, TM-08</text>
+
+  <path d="M376 405 C410 405 430 300 480 300" class="flow" />
+  <text x="393" y="350" class="small">Auth + App Check</text>
+  <path d="M920 255 C960 255 985 240 1030 240" class="flow" />
+  <text x="940" y="225" class="small">sanitized prompt</text>
+  <path d="M920 355 C965 355 985 405 1030 405" class="flow" />
+  <text x="941" y="388" class="small">Admin SDK writes</text>
+  <path d="M1030 280 C980 300 965 300 920 300" class="flow" />
+  <text x="932" y="318" class="small">structured result</text>
+  <path d="M1030 455 C975 455 965 455 920 455" class="flow" />
+
+  <rect x="42" y="600" width="1313" height="238" class="boundary" />
+  <text x="66" y="636" class="heading">THREAT REGISTER SNAPSHOT</text>
+  <rect x="68" y="664" width="390" height="132" class="box" fill="#fff7ed" stroke="#f97316" />
+  <text x="90" y="694" class="label">TM-01 / TM-02 / TM-03</text>
+  <text x="90" y="721" class="body">Forged identity, scripted abuse,</text>
+  <text x="90" y="744" class="body">and cross-user access</text>
+  <text x="90" y="773" class="body">Auth, App Check, UID paths, Firestore rules</text>
+  <rect x="480" y="664" width="390" height="132" class="box" fill="#fef2f2" stroke="#ef4444" />
+  <text x="502" y="694" class="label">TM-04 / TM-05 / TM-06</text>
+  <text x="502" y="721" class="body">Prompt injection, data disclosure,</text>
+  <text x="502" y="744" class="body">and malformed model output</text>
+  <text x="502" y="773" class="body">Privacy Guardian, schemas, fixed categories</text>
+  <rect x="892" y="664" width="439" height="132" class="box" fill="#f5f3ff" stroke="#8b5cf6" />
+  <text x="914" y="694" class="label">TM-07 / TM-08 / TM-09 / TM-10</text>
+  <text x="914" y="721" class="body">Deletion, tampering, cost exhaustion,</text>
+  <text x="914" y="744" class="body">and deployment-secret exposure</text>
+  <text x="914" y="773" class="body">Retention, hashes, budgets, Secret Manager</text>
+
+  <path d="M210 550 L210 664" class="risk-flow" />
+  <text x="82" y="585" class="risk">attacker-controlled input</text>
+  <path d="M700 550 L700 664" class="risk-flow" />
+  <text x="583" y="585" class="risk">residual model / policy risk</text>
+  <path d="M1170 550 L1170 664" class="risk-flow" />
+  <text x="1061" y="585" class="risk">trusted operator boundary</text>
+
+  <text x="60" y="875" class="small">Security claim: user isolation and unauthorized-client protection are enforced. Privileged Google Cloud operators and the backend runtime remain trusted components.</text>
+</svg>

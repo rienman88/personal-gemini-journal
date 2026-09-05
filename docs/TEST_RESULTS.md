@@ -14,7 +14,7 @@ Every runnable manual test uses the same five-column pattern:
 
 Status notation: [x] PASSED means evidence already exists in this repository or staging record. [ ] Pass: ______ is intentionally blank for the operator. READY TO RUN means the test is documented but has not been claimed as passed.
 
-The original recorded plain-entry test occurred on September 2, 2026 at 10:27:42 PM. The timezone was not included in the original record. The complete feature-to-evidence map is in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md). The public deployment procedure is in [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) and [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md). Private deployment history is intentionally not required for this public test document.
+The original recorded plain-entry test occurred on September 2, 2026 at 10:27:42 PM. The timezone was not included in the original record. The complete feature-to-evidence map is in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), and the formal threat register is in [THREAT_MODEL.md](THREAT_MODEL.md). The public deployment procedure is in [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) and [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md). Private deployment history is intentionally not required for this public test document.
 
 ## Manual verification checklist
 
@@ -55,7 +55,7 @@ Use a dedicated test account and an emulator or isolated staging project for des
 | 21 | Cross-User Identity Isolation | Use Test User B to request Test User A's entry ID or listen to Test User A's Firestore path. | No entry, conversation, audit, usage, or retention data belonging to Test User A is returned. | [ ] Pass: ______ READY TO RUN - two test accounts |
 | 22 | Plain Entry Analysis | Write: Spent the morning refactoring Express routes and setting up Secret Manager for Gemini API keys. | Summary, topics, a closed-set category, reflection prompt, timestamp, RAW content, DERIVED content, audit event, and calendar date appear. | [x] PASSED - original Step 1; [ ] Full UI recheck |
 | 23 | Empty and Whitespace Validation | Submit an empty entry, a spaces-only entry, and a spaces-only reply. | The UI prevents submission or the API returns 400; no journal, audit, or Gemini record is created. | [ ] Pass: ______ READY TO RUN - operator |
-| 24 | Input Length Boundaries | Submit an entry of exactly 8,000 characters and a reply of exactly 2,000 characters, then exceed each by one character. | Exact limits are accepted; oversized values return 400 and do not call Gemini. | [ ] Pass: ______ READY TO RUN - operator |
+| 24 | Input Length Boundaries | Submit an entry of exactly 8,000 characters and a reply of exactly 2,000 characters, then exceed each by one character. | Exact limits are accepted; oversized values return 400 before Gemini or persistence work. | [x] PASSED - server input validation tests; [ ] Live UI/API walkthrough |
 | 25 | Privacy Guardian Entry - Redact | Create an entry containing the safe fixture AKIAABCDEFGHIJKLMNOP and select Redact before sending. | The modal unmounts immediately, Gemini receives a redacted copy, and Firestore keeps the original RAW content with redaction metadata. | [x] PASSED - interception and modal unmount; [ ] Live storage recheck |
 | 26 | Privacy Guardian Entry - Send As-Is | Create an entry containing AKIAABCDEFGHIJKLMNOP and select Send as-is anyway. | Explicit consent is required, the modal unmounts immediately, and the selected policy is persisted. | [x] PASSED - immediate modal unmount; [ ] Live consent/storage recheck |
 | 27 | Privacy Guardian Reply - Redact | Reply to an entry with AKIAABCDEFGHIJKLMNOP and select Redact before sending. | The modal unmounts immediately, the user turn remains RAW, and the Gemini-bound copy is redacted. | [x] PASSED - interception and modal unmount; [ ] Live storage recheck |
@@ -106,8 +106,9 @@ Use a dedicated test account and an emulator or isolated staging project for des
 
 | Area | Verification Result |
 | --- | --- |
-| Root and server builds | Passed on 2026-09-04 |
-| Firebase Auth and Firestore emulator suite | 38 passed, 2 intentionally pending on 2026-09-05 |
+| Root and server builds | Passed on 2026-09-05 |
+| Firebase Auth and Firestore emulator suite | 41 passed, 2 intentionally pending on 2026-09-05 |
+| Input validation | Exact-limit acceptance, empty-value rejection, and oversized entry/reply rejection passed in server tests |
 | Privacy Guardian patterns and redaction | Passed for AWS key, Google API key, generic secret assignment, email, phone, and SSN test cases |
 | Gemini resilience | Passed for schema retry, model fallback, non-retryable failure, empty response, and bounded attempts |
 | Firestore security rules | Passed for owner isolation, unauthenticated denial, client-write denial, usage/audit denial, deleted conversation denial, and retention denial |
@@ -118,7 +119,7 @@ Use a dedicated test account and an emulator or isolated staging project for des
 | AI mode policy | Passed: legacy entries default to AI Journal; Private Journal disables Gemini, Privacy Guardian, token budget, conversation creation, and replies |
 | Deployment script and cloud resources | PowerShell syntax passed; App Check-enforced Cloud Run revision, dedicated identities, corrected Secret Manager bindings, label, ready retention index, and Scheduler are live; live browser token testing and controlled due-record redaction remain operator gates |
 
-The current local verification result as of 2026-09-05 is 38 server tests passing, 2 intentionally pending, and 5 browser smoke tests passing. The browser smoke suite passed against a separately verified Vite server using `PLAYWRIGHT_REUSE_SERVER=1`; this workaround is documented for Windows child-server lifecycle timeouts. The first emulator attempt selected Java 11, below the current Firebase CLI requirement of Java 21 or newer. Rerunning with the installed Java 26 runtime produced the stated result. The pending tests are the live Gemini authenticity check without GEMINI_API_KEY_TEST and the named route-level idempotency specification awaiting a complete route harness. AI mode policy tests also verify that Private Journal cannot enter Gemini processing.
+The current local verification result as of 2026-09-05 is 41 server tests passing, 2 intentionally pending, and 5 browser smoke tests passing. The browser smoke suite passed against a separately verified Vite server using `PLAYWRIGHT_REUSE_SERVER=1`; this workaround is documented for Windows child-server lifecycle timeouts. The first emulator attempt selected Java 11, below the current Firebase CLI requirement of Java 21 or newer. Rerunning with the installed Java 26 runtime produced the stated result. The pending tests are the live Gemini authenticity check without GEMINI_API_KEY_TEST and the named route-level idempotency specification awaiting a complete route harness. AI mode policy tests also verify that Private Journal cannot enter Gemini processing.
 
 The previous Vite production build warning about a minified bundle above 500 kB was resolved by splitting Firebase vendor code; the current build completes without that warning.
 
