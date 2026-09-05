@@ -483,6 +483,23 @@ grm or Grammarly console messages are injected by the extension and are not appl
 
 PowerShell environment-variable syntax does not work in cmd.exe, and cmd.exe continuation syntax does not work in PowerShell. Use one shell consistently. In PowerShell use $env:NAME; in cmd use set NAME=value. Verify the active shell before running a deployment command.
 
+## Latest Verified Deployment Record
+
+Recorded 2026-09-05 after publishing the AI Journal / Private Journal mode.
+
+- Source commit: `508a949`
+- Docker image tag: `release-20260905-ai-toggle`
+- Ready revision: `personal-gemini-journal-00020-lww`
+- Traffic: 100 percent to the ready revision
+- App Check: enforced (`ENFORCE_APP_CHECK=true`)
+- Runtime identity: dedicated `personal-gemini-journal-run` service account
+- Required cohort label: `dev-tutorial=cloud-run-ai-challenge`
+- Retention scheduler: enabled at `0 2 * * *` in `asia-southeast1`
+- Canonical service URL: `https://personal-gemini-journal-eazyegerma-as.a.run.app`
+- Alternate service URL: `https://personal-gemini-journal-709422088585.asia-southeast1.run.app`
+- HTTP smoke: both service URLs returned `200` with the application HTML shell
+- Live AI-mode walkthrough: remains a manual operator check; use the fictional test sequence in the public test matrix
+
 ## Private Execution Log Template
 
 Keep project-specific values in a private operator record unless they are explicitly safe to publish.
