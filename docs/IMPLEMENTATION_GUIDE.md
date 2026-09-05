@@ -1,4 +1,4 @@
-# Implementation and Submission Guide
+# Implementation Guide
 
 This guide maps the [Google Cloud Gen AI Academy APAC Edition, Cohort 3](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage) ideathon requirements to this repository. The application code is hand-written and locally verified; the Google AI Studio, Firebase Console, Google Cloud, Cloud Run, GitHub/GitLab, social post, and Academy dashboard steps remain external actions.
 
@@ -65,9 +65,9 @@ Complete these in the selected Google Cloud/Firebase project:
 - [ ] Firebase Authentication is enabled.
 - [ ] Google is enabled as the sign-in provider and a support email is configured.
 - [ ] Firebase terms are accepted when prompted.
-- [x] Cloud Firestore rules are deployed in the target project; the `retentionEntries.redactAt` collection-group index is deployed and `READY`.
-- [x] A Gemini API key is available through Secret Manager for server-side use.
-- [x] `gcloud` and Firebase CLI are installed and authenticated for the target project.
+- [ ] Cloud Firestore rules are deployed in the target project; the `retentionEntries.redactAt` collection-group index is deployed and `READY`.
+- [ ] A Gemini API key is available through Secret Manager for server-side use.
+- [ ] `gcloud` and Firebase CLI are installed and authenticated for the target project.
 - [ ] A budget alert is configured before real traffic is sent.
 - [ ] A score-based reCAPTCHA Enterprise Web key is created for the production Cloud Run hostname and registered in Firebase App Check. Do not add localhost to this production key.
 
@@ -235,23 +235,3 @@ The codelab lists Maps, admin RBAC, and external notifications as optional expan
 
 The current version intentionally does not include semantic vector search or a second calendar collection. The calendar is derived from entries already loaded, which keeps deletion consistent and avoids duplicate state.
 
-## 9. Submission checklist
-
-- [ ] Google AI Studio contains the current `CONSTITUTION.md` instructions.
-- [ ] Firebase terms are accepted and Google Sign-In is enabled.
-- [ ] Firestore is enabled in the configured region and rules are deployed.
-- [x] Gemini key is bound through Secret Manager.
-- [x] `DELETION_HMAC_KEY` and `RETENTION_WORKER_TOKEN` are bound through Secret Manager.
-- [ ] Daily Cloud Scheduler job processes a controlled due record and produces `entry_redacted`; the job itself is deployed, enabled, and has returned HTTP 200 with an empty batch.
-- [x] Cloud Run service is deployed and the live URL works for `/` and `/health`.
-- [x] `dev-tutorial=cloud-run-ai-challenge` is present on the Cloud Run service.
-- [x] Dedicated runtime service account is configured and verified on the Cloud Run revision.
-- [ ] Firebase App Check is registered for the production web app, the build contains the production site key, and missing/invalid app tokens are rejected by the API.
-- [ ] Public GitHub/GitLab repository is available and contains no secrets.
-- [ ] Production smoke test evidence is recorded.
-- [x] The original nine-step manual application verification is recorded in `TEST_RESULTS.md`, with the expanded feature-by-feature manual matrix and explicit operator-only gates following it.
-- [ ] Demo materials show Privacy Guardian, multi-turn conversation, integrity verification, audit activity, calendar behavior, and privacy-safe entry deletion.
-- [ ] Public demo blog post or video social post includes `#AccelerateAIwithCloudRun`.
-- [ ] Cloud Run URL, repository URL, and demo post URL are submitted through the Academy programme dashboard.
-
-Use the official [Cohort 3 event page](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage) as the source of truth for deadlines, programme mechanics, and submission status.
