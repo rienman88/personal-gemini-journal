@@ -219,23 +219,6 @@ Full evidence and boundaries are in [TEST_RESULTS.md](TEST_RESULTS.md).
 - [ ] Deploy and verify Firestore rules.
 - [ ] Record the live Cloud Run URL, repository URL, and Academy submission evidence.
 
-## Documentation synchronization checklist
-
-- [ ] README reflects the current feature set, architecture, local verification, deployment path, and limitations.
-- [ ] HOW_IT_WORKS reflects authentication, App Check, entry/reply behavior, calendar, related entries, audit activity, deletion, retention, and failure states.
-- [ ] IMPLEMENTATION_GUIDE and CLOUD_IMPLEMENTATION_RUNBOOK reflect Firebase, Secret Manager, Cloud Run identity, App Check registration, scheduler setup, and Academy submission steps.
-- [ ] DOCKER_DEPLOYMENT_RUNBOOK records the actual Docker build, Cloud Run image deployment, runtime secret boundary, rollback, alternatives, errors, and execution checklist.
-- [ ] Public documentation identifies the repository publication boundary and excludes local-only credential material; detailed GitHub operator procedures remain private.
-- [ ] TECHNICAL_WRITEUP reflects current routes, middleware, data model, retention lifecycle, tests, and open production verification.
-- [ ] CONSTITUTION preserves the current architecture and defines the feature/security contract for Google AI Studio.
-- [ ] OWASP_LLM_TOP10_COVERAGE reflects current LLM controls, cross-cutting application controls, and honest limits.
-- [ ] TEST_RESULTS records the original nine manual checks, the complete feature-by-feature manual matrix, automated evidence, App Check tests, deletion tests, and external checks still required.
-- [ ] USABILITY_CHECKLIST covers the complete user-facing walkthrough and production usability/security checks.
-- [ ] Relative Markdown links resolve across all thirteen root documentation files.
-- [ ] Submission instructions identify Google Cloud Gen AI Academy APAC Cohort 3 rather than Devpost; historical nine-step results, retention semantics, and App Check gates are labeled accurately in the root documentation.
-- [ ] `docs/ARCHITECTURE.svg` reflects the current Auth, App Check, Cloud Run, Gemini, Firestore, Secret Manager, Scheduler, and retention paths.
-- [ ] Firebase Auth persistence is explicit browser-local persistence with no custom application session cookie; manual sign-out remains the user control for trusted-device sessions.
-
 ## Reviewer prompt
 
 Evaluate this repository against **Authenticity, Usability, Stability, and Security**. Prioritize concrete evidence over claims. Check whether the implementation preserves user isolation, protects Gemini calls from accidental disclosure, handles AI failure without data loss, maintains deletion and hash-chain invariants, and accurately distinguishes local verification from external production readiness. Identify any security gaps, misleading documentation, missing tests, or unnecessary architectural complexity.
