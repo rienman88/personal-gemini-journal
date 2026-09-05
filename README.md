@@ -53,6 +53,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 - RAW user text stored separately from clearly labeled DERIVED Gemini output.
 - Six-model Gemini fallback ladder with three bounded structured-output attempts per model, at most 18 structured attempts total.
 - Structured Gemini output includes a summary, up to five topics, one or two fixed categories, and a reflection question.
+- Conversation guidance uses Gemini's system-instruction field; obvious drafting or role-marker artifacts are rejected and sent through the existing fallback ladder instead of being stored as model replies.
 - Per-user request rate limiting, daily token budgets, input limits, and bounded conversation context.
 - Firestore-backed SHA-256 hash chains for entries and conversation turns, with server-side rehash/recalculation through the integrity-verification endpoint. The UI distinguishes total server records verified, entries pending retention redaction, and entries still visible in the journal.
 - Read-only security activity panel showing the signed-in user's recent audit events.

@@ -1,6 +1,6 @@
 # OWASP Top 10 for LLM Applications - Actual Coverage
 
-Every control below was checked against the implementation in this repository. Manual execution instructions are in [TEST_RESULTS.md](TEST_RESULTS.md), steps 17-61. A manual ID is an executable check, not a claim that the check has already passed. The verification status in TEST_RESULTS distinguishes existing evidence from operator-only or final-production work.
+Every control below was checked against the implementation in this repository. Manual execution instructions are in [TEST_RESULTS.md](TEST_RESULTS.md), steps 17-64. A manual ID is an executable check, not a claim that the check has already passed. The verification status in TEST_RESULTS distinguishes existing evidence from operator-only or final-production work.
 
 This document covers the LLM-specific layer. The broader application controls are documented in [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), including Firebase Auth, Firebase App Check, Firestore rules, hash chains, audit events, deletion retention, Cloud Run IAM, Secret Manager, and Scheduler. The formal cross-boundary threat register is in [THREAT_MODEL.md](THREAT_MODEL.md).
 
@@ -8,6 +8,7 @@ This document covers the LLM-specific layer. The broader application controls ar
 
 - User content is wrapped in explicit journal-entry data boundaries with instructions to treat the content as data, never as a command.
 - Multi-turn replies are sent as separate conversation messages rather than concatenated into one untyped instruction blob.
+- Conversation guidance is sent as a system instruction rather than a user-history message, and the response path rejects obvious drafting, reasoning, role-marker, and slash-command artifacts before persistence.
 - Gemini output is display-only DERIVED data. It never determines authorization, triggers a code path, calls a tool, or writes Firestore.
 - Schema validation rejects categories outside the fixed eight-value list.
 - Manual verification: Step 31 tests instruction-like journal content and confirms that it cannot produce an application action.
@@ -42,8 +43,8 @@ Private Journal is an additional user-controlled disclosure boundary: when the a
 
 - React JSX rendering escapes dynamic values; dangerouslySetInnerHTML is not used.
 - Gemini structured output is schema-validated before it is persisted.
-- AI content is visibly labeled DERIVED and is not treated as an instruction or authority.
-- Manual verification: Step 30 tests malformed/failed model behavior; Step 34 verifies RAW/DERIVED separation; Step 57 checks visible labels, dialog semantics, and safe rendering through the user interface.
+- AI content is visibly labeled DERIVED and is not treated as an instruction or authority. Conversation replies are also screened for obvious drafting or role-marker leakage before persistence.
+- Manual verification: Step 30 tests malformed/failed model behavior; Step 34 verifies RAW/DERIVED separation; Step 57 checks visible labels, dialog semantics, and safe rendering through the user interface; Step 64 checks conversation output hygiene and fallback behavior.
 
 ## LLM06: Excessive Agency - strongly reduced by design
 
@@ -99,6 +100,7 @@ Private Journal is an additional user-controlled disclosure boundary: when the a
 | Steps 55-56 | Docker, secrets, identities, and image supply chain | Image/build input contains no server secret; build and runtime access are separated and least-privilege bindings are present. | **PASSED by deployment/code review; clean-machine recheck READY TO RUN** |
 | Step 60 | Release rollback | Traffic can return to a known-good immutable revision without deleting data, rules, or secrets. | **READY TO RUN - OPERATOR** |
 | Step 61 | AI Journal / Private Journal policy | Private Journal persists RAW text and security metadata without Gemini, derived output, token usage, or model turns; user-authored private notes are allowed as hash-chained turns. AI Journal preserves the guarded model path. | **Policy tests and browser smoke PASSED; live preference persistence READY TO RUN** |
+| Step 64 | Conversation output hygiene | System-level conversation guidance and rejection of obvious drafting or role-marker artifacts keep model replies direct; rejected output advances through the existing fallback ladder. | **Automated regression PASSED; live reply walkthrough READY TO RUN** |
 
 ## What this means for the submission
 

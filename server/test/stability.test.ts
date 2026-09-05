@@ -4,7 +4,7 @@
  *   cd server && npm install && npm test
  */
 import { expect } from "chai";
-import { analyzeEntry, continueConversation, MAX_GEMINI_REPLY_CHARS } from "../src/lib/geminiClient";
+import { analyzeEntry, continueConversation, isUsableConversationReply, MAX_GEMINI_REPLY_CHARS } from "../src/lib/geminiClient";
 
 const VALID_JSON = JSON.stringify({
   summary: "ok",
@@ -117,6 +117,18 @@ describe("Stability", () => {
       const result = await continueConversation("fake-key", [{ role: "user", text: "hi" }], caller);
       expect(result.ok).to.equal(true);
       expect(calls).to.equal(2);
+    });
+
+    it("rejects drafting or role-marker output and falls back to the next model", async () => {
+      let calls = 0;
+      const caller = async () => {
+        calls += 1;
+        return calls === 1 ? '/AI jargon. 5. **Final Polish:** "That' : "A direct journaling reply.";
+      };
+      const result = await continueConversation("fake-key", [{ role: "user", text: "hi" }], caller);
+      expect(result.ok).to.equal(true);
+      expect(calls).to.equal(2);
+      expect(isUsableConversationReply('/AI jargon. 5. **Final Polish:** "That')).to.equal(false);
     });
 
     it("bounds a long Gemini reply at a complete word or sentence", async () => {

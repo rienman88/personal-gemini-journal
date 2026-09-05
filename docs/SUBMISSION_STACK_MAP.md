@@ -59,7 +59,7 @@ The previous list is not the complete feature inventory. Include these capabilit
 - **AI Journal / Private Journal mode:** Each user can choose whether a new entry uses Gemini. Private Journal stores the original entry without Gemini, token usage, derived output, or model turns.
 - **Private notes:** Private Journal supports clearly labeled user-authored notes up to 1,000 characters. They are authenticated, hash-chained, audited, deleted, and retained like other protected journal material, but never sent to Gemini.
 - **Structured Gemini journaling:** AI Journal produces a summary, topics, allowlisted categories, a reflection question, and bounded contextual replies through a multi-turn conversation per entry.
-- **Resilience and graceful degradation:** The server uses a six-model fallback ladder, bounded retries, input limits, and preserves the RAW entry when Gemini is unavailable.
+- **Resilience and graceful degradation:** The server uses a six-model fallback ladder, bounded retries, input limits, system-level conversation guidance, and rejects obvious drafting artifacts before persistence while preserving the RAW entry when Gemini is unavailable.
 - **RAW/DERIVED separation:** The user's original words remain distinct from Gemini-generated summaries, categories, reflections, and replies, which are labeled as derived content.
 - **Storage segregation:** Entries, conversation turns, preferences, usage, audit events, chain metadata, and backend-only retention records use separate user-scoped Firestore paths.
 - **Idempotent and validated requests:** Client request IDs prevent duplicate entry or reply writes, and server validation rejects empty or oversized requests before Gemini or persistence work.

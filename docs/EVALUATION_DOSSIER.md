@@ -157,6 +157,7 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 - Gemini never receives a secret or PII match when the user chooses the redaction action.
 - Private Journal entries never enter the Gemini or token-budget path; their per-entry mode fields make that provenance visible and durable.
 - Gemini output cannot authorize requests, execute tools, or write Firestore.
+- Conversation guidance is sent through Gemini's system-instruction field, and obvious drafting or role-marker artifacts are rejected before a reply is persisted; the existing fallback ladder then tries the next model.
 - A failed Gemini call does not discard the user's RAW entry or reply.
 - Hash-chain verification detects broken active content and preserves deleted chain linkage with tombstones.
 - App Check is fail-closed when explicitly enabled in production.
@@ -167,6 +168,7 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 
 - Privacy Guardian uses deterministic patterns; obfuscated, encoded, or novel secrets can evade it.
 - Prompt injection is reduced by untrusted-data framing and non-authoritative output handling, not eliminated.
+- Conversation output hygiene is a bounded quality safeguard, not a factuality guarantee; unusual or novel model drift can still require operator review.
 - App Check code is implemented and the current Cloud Run revision enforces it. Firebase Console Web-app registration confirmation and live valid-token success plus missing/invalid-token rejection remain release verification steps.
 - Retention redaction code and scheduler provisioning are implemented. The live staging worker rejects invalid tokens, returns HTTP 200 for a valid empty batch, and the manual Scheduler invocation also returned HTTP 200; a controlled due-record transformation remains pending.
 - The current worker scheduler uses a static secret header. OIDC Scheduler-to-Cloud Run authentication would be stronger but requires a separate internal/private worker architecture; it is not silently claimed here.
