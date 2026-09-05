@@ -8,21 +8,6 @@ The documents are intentionally separated by responsibility. Do not treat every 
 
 The current feature set includes a server-enforced **AI Journal / Private Journal** choice. It is intentionally visible throughout the public documentation because it is a user-facing privacy capability, not a private operator detail. The implementation source of truth is `server/src/lib/journalMode.ts`, the preference route is in `server/src/routes/journal.ts`, and the UI control is in `web/src/components/JournalModeToggle.tsx`.
 
-## Recommended Order
-
-| Order | Responsibility | Primary document | What to do |
-| --- | --- | --- | --- |
-| 0 | Project orientation | [README.md](../README.md) | Understand the product, architecture, feature inventory, local quick start, and submission boundary. |
-| 1 | AI Studio security setup | [CONSTITUTION.md](CONSTITUTION.md) | Paste the complete contents into Google AI Studio Custom Instructions before asking AI Studio to build or extend the application. |
-| 2 | AI Studio and requirements context | [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) | Follow the Google AI Studio, Firebase, local verification, and Academy requirements mapping. |
-| 3 | Docker and image build | [DOCKER_DEPLOYMENT_RUNBOOK.md](DOCKER_DEPLOYMENT_RUNBOOK.md) | Follow the Dockerfile, Cloud Build, Artifact Registry, staged App Check, and image-release procedure. |
-| 4 | Firebase and Cloud operations | [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) | Follow the generic project-specific setup for Firebase Auth, Firestore, App Check, Secret Manager, gcloud, IAM, Cloud Run, Scheduler, and production verification. |
-| 5 | End-to-end operator flow | [CLOUD_IMPLEMENTATION_RUNBOOK.md](CLOUD_IMPLEMENTATION_RUNBOOK.md) | Use the public-safe cloud runbook together with the Docker runbook as the linear deployment path for a new project. |
-| 6 | Verification evidence | [TEST_RESULTS.md](TEST_RESULTS.md), [USABILITY_CHECKLIST.md](USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](OWASP_LLM_TOP10_COVERAGE.md) | Execute and record manual tests, browser smoke checks, OWASP coverage, and remaining external gates. |
-| 7 | Evaluation package | [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md), [TECHNICAL_WRITEUP.md](TECHNICAL_WRITEUP.md), [HOW_IT_WORKS.md](HOW_IT_WORKS.md) | Give reviewers the feature, architecture, data lifecycle, security boundary, and implementation explanation. |
-| 8 | Public repository | README.md and this map | Publish only the reviewed source allowlist through GitHub or GitLab; private publication checklists are intentionally excluded. |
-| 9 | Video and submission | [VIDEO_SUBMISSION_SCRIPT.md](VIDEO_SUBMISSION_SCRIPT.md) | Record the safe demo and submit the Cloud Run URL, repository, social post, and brief description. |
-
 ## Setup Responsibilities
 
 ### 1. Google AI Studio
