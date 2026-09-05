@@ -487,11 +487,12 @@ PowerShell environment-variable syntax does not work in cmd.exe, and cmd.exe con
 
 ## Latest Verified Deployment Record
 
-Recorded 2026-09-05 after publishing the AI Journal / Private Journal mode.
+Recorded 2026-09-05 after deploying strict input-boundary validation and the AI Journal / Private Journal mode.
 
-- Source commit: `508a949`
-- Docker image tag: `release-20260905-ai-toggle`
-- Ready revision: `personal-gemini-journal-00020-lww`
+- Source commit: `3ec3ad8`
+- Docker image tag: `release-20260905-input-hardening`
+- Image digest: `sha256:eaaf7252aa4c6f41b85cd87fd6dd7f1906ce82ffbdc4808b9dd2bef08041a9f0`
+- Ready revision: `personal-gemini-journal-00022-m6f`
 - Traffic: 100 percent to the ready revision
 - App Check: enforced (`ENFORCE_APP_CHECK=true`)
 - Runtime identity: dedicated `personal-gemini-journal-run` service account
