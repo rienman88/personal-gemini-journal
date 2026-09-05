@@ -1,19 +1,22 @@
 # Quick-Reference
 
-| Requirement | Location |
-|---|---|
+| ITEM | Links | 
+| --- | --- | 
 | Canonical URL | https://personal-gemini-journal-eazyegerma-as.a.run.app |
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
+| Version 1 Features | [Personal Gemini Journal Full Version 1 Features](#version-1-feature-inventory) |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
-| What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
-| AI Studio Build | [`Special Instructions`](docs/CONSTITUTION.md) |
-| Docker | [`Docker Deployment`](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) |
-| Implementation | [`IMPLEMENTATION GUIDE`](docs/IMPLEMENTATION_GUIDE.md) |
-| Usability checklist | [`Usability test`](docs/USABILITY_CHECKLIST.md) |
-| OWASP Top 10 LLM Coverage | [`OWASP Coverage`](docs/OWASP_LLM_TOP10_COVERAGE.md) |
-| Technical reviewer | [`TECHNICAL WRITE-UP`](docs/TECHNICAL_WRITEUP.md) |
-| Manual Verification Checklist | [`TEST RESULTS`](docs/TEST_RESULTS.md) |
+## Recommended Order
+| Order | Responsibility | Primary document | What to do |
+| --- | --- | --- | --- |
+| 0 | Project orientation | [README.md](README.md) | Understand the product, architecture, feature inventory, local quick start, and submission boundary. |
+| 1 | Requirements and current implementation | [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) | Follow the Google AI Studio, Firebase, local verification, and Academy requirements mapping. |
+| 2 | Setup Document | [SETUP_DOCUMENT_MAP.md](docs/SETUP_DOCUMENT_MAP.md) | navigation index for setting up, deploying, testing, publishing, and presenting Personal Gemini Journal. |
+| 3 | End-to-end operator flow | [CLOUD_IMPLEMENTATION_RUNBOOK.md](docs/CLOUD_IMPLEMENTATION_RUNBOOK.md) | Use the public-safe cloud runbook together with the Docker runbook as the linear deployment path for a new project. |
+| 4 | Verification evidence | [TEST_RESULTS.md](docs/TEST_RESULTS.md), [USABILITY_CHECKLIST.md](docs/USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](docs/OWASP_LLM_TOP10_COVERAGE.md) | Execute and record manual tests, browser smoke checks, OWASP coverage, and remaining external gates. |
+| 5 | Evaluation package | [EVALUATION_DOSSIER.md](docs/EVALUATION_DOSSIER.md), [TECHNICAL_WRITEUP.md](docs/TECHNICAL_WRITEUP.md), [HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) | Give reviewers the feature, architecture, data lifecycle, security boundary, and implementation explanation. |
+
 
 
 # Personal Gemini Journal
