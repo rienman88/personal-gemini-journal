@@ -1,6 +1,26 @@
+# Quick-Reference
+
+| Requirement | Location |
+|---|---|
+| Canonical URL | https://personal-gemini-journal-eazyegerma-as.a.run.app |
+| Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
+| Demonstration video | [Linkedin]() |
+| Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
+| What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
+| AI Studio Build | [`Special Instructions`](docs/CONSTITUTION.md) |
+| Docker | [`Docker Deployment`](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) |
+| Implementation | [`IMPLEMENTATION GUIDE`](docs/IMPLEMENTATION_GUIDE.md) |
+| Usability checklist | [`Usability test`](docs/USABILITY_CHECKLIST.md) |
+| OWASP Top 10 LLM Coverage | [`OWASP Coverage`](docs/OWASP_LLM_TOP10_COVERAGE.md) |
+| Technical reviewer | [`TECHNICAL WRITE-UP`](docs/TECHNICAL_WRITEUP.md) |
+| Manual Verification Checklist | [`TEST RESULTS`](docs/TEST_RESULTS.md) |
+
+
 # Personal Gemini Journal
 
-Personal Gemini Journal is a user-authenticated journaling application built for the [Google Cloud Gen AI Academy APAC Edition, Cohort 3](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage) ideathon, focused on Accelerate AI with Cloud Run. It combines Google Sign-In, Gemini-assisted reflection, private Firestore storage, and deterministic privacy and integrity controls.
+Personal Gemini Journal is a user-authenticated journaling application built for the [Google Cloud Gen AI Academy APAC Edition, Cohort 3 ideathon](https://hack2skill.com/event/apac-genaiacademy?tab=cohort3&utm_source=hack2skill&utm_medium=homepage), focused on Accelerate AI with Cloud Run.
+
+It combines Google Sign-In, Gemini-assisted reflection, private Firestore storage, and deterministic privacy and integrity controls.
 
 The central design rule is simple: **Gemini interprets journal content, but it never decides authorization, privacy policy, or what gets persisted.**
 
@@ -239,19 +259,18 @@ Firestore Security Rules isolate ordinary authenticated users from one another, 
 
 ## Documentation map
 
-- `HOW_IT_WORKS.md` explains the user experience in plain language.
-- `SETUP_DOCUMENT_MAP.md` is the canonical order for AI Studio, Docker, Firebase, Cloud Run, verification, GitHub, and video setup documents.
+- `docs/HOW_IT_WORKS.md` explains the user experience in plain language.
+- `docs/SETUP_DOCUMENT_MAP.md` is the canonical order for AI Studio, Docker, Firebase, Cloud Run, verification, GitHub, and video setup documents.
 - `docs/ARCHITECTURE.svg` is the source-controlled architecture image for the current application and deployment topology.
-- `IMPLEMENTATION_GUIDE.md` maps the codelab requirements to local and external steps.
-- `TECHNICAL_WRITEUP.md` documents the implementation and verification evidence.
-- `CONSTITUTION.md` contains the Google AI Studio security instructions.
-- `OWASP_LLM_TOP10_COVERAGE.md` records actual LLM security coverage and limits.
-- `USABILITY_CHECKLIST.md` tracks manual usability work and browser smoke coverage.
-- `docs/SETUP_DOCUMENT_MAP.md` is the public-safe deploy-from-scratch document order; the self-deployment guide and GitHub operator guides are intentionally local-only and are not required in the public repository.
+- `docs/IMPLEMENTATION_GUIDE.md` maps the codelab requirements to local and external steps.
+- `docs/TECHNICAL_WRITEUP.md` documents the implementation and verification evidence.
+- `docs/CONSTITUTION.md` contains the Google AI Studio security instructions.
+- `docs/OWASP_LLM_TOP10_COVERAGE.md` records actual LLM security coverage and limits.
+- `docs/USABILITY_CHECKLIST.md` tracks manual usability work and browser smoke coverage.
+- The self-deployment guide and GitHub operator guides are intentionally local-only and are not required in the public repository.
 - GitHub publication procedures are intentionally kept private; use the public allowlist in `SETUP_DOCUMENT_MAP.md` and upload only reviewed source files.
-- `TEST_RESULTS.md` records the original nine-step manual verification checklist, the expanded feature-by-feature manual test matrix, and system execution evidence.
-- `VIDEO_SUBMISSION_SCRIPT.md` is the current word-for-word Hack2Skill video script, safe demo data, evidence sequence, security wording, and recording checklist.
+- `docs/TEST_RESULTS.md` records the original nine-step manual verification checklist, the expanded feature-by-feature manual test matrix, and system execution evidence.
 - `scripts/provision-cloud-run.ps1` provisions the production Cloud Run identity, App Check build/runtime settings, secrets, label, and retention scheduler.
-- `DOCKER_DEPLOYMENT_RUNBOOK.md` records the actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log.
-- `CLOUD_IMPLEMENTATION_RUNBOOK.md` is the implementation-specific Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error-handling, and verification runbook with safe operator record templates.
-- `EVALUATION_DOSSIER.md` is the single complete feature and evaluation brief for reviewers or another AI system.
+- `docs/DOCKER_DEPLOYMENT_RUNBOOK.md` records the actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log.
+- `docs/CLOUD_IMPLEMENTATION_RUNBOOK.md` is the implementation-specific Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error-handling, and verification runbook with safe operator record templates.
+- `docs/EVALUATION_DOSSIER.md` is the single complete feature and evaluation brief for reviewers or another AI system.
