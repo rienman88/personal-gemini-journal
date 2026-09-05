@@ -34,6 +34,38 @@ Use the following under **Others**, if the form allows multiple entries:
 - Google Cloud IAM and dedicated service accounts
 - Google AI Studio Build mode and Custom Instructions
 
+## Why the additional capabilities were implemented
+
+These capabilities are not decorative add-ons. Each one addresses a specific privacy, integrity, usability, abuse, or operational problem in an AI journaling application.
+
+| Capability | Why it exists | User or evaluator benefit |
+| --- | --- | --- |
+| Privacy Guardian PII interception | Journal text can contain credentials, contact details, or other sensitive data. The server scans AI-bound entries and replies before Gemini receives them. | The user can redact detected matches before sending them to Gemini, while the original RAW journal text remains unchanged. |
+| Firebase App Check with reCAPTCHA Enterprise | A valid Firebase user token identifies a user but does not prove that the request came from the real application. | Adds a second application-authenticity signal and rejects missing or invalid App Check requests in production. It complements Firebase Auth; it does not replace it. |
+| Per-user rate limits and daily token budgets | Repeated requests can cause abuse, latency, or unexpected Gemini spending. | Limits rapid request bursts and expensive retry patterns for each UID while keeping normal journaling usable. |
+| SHA-256 hash-chain integrity verification | A database record can be changed after it is written unless the application keeps tamper-evident links. | The server recalculates `hash` and `prevHash` links for entries and conversation turns and reports whether the chain remains intact. This is tamper evidence, not encryption. |
+| Security Activity auditing | Security-relevant actions are difficult to understand when they are mixed into journal content. | A read-only, user-scoped activity view shows events such as creation, PII detection, replies, private notes, integrity checks, deletion, and redaction without exposing secrets in the audit record. |
+| Category-based entry relationships | Users benefit from connections between entries, but a separate semantic-search system would add complexity and privacy surface. | A closed-set category graph provides predictable `Related` links for entries sharing an allowlisted category. It is intentionally not vector or semantic search. |
+| Derived calendar | A second calendar database could drift from the actual journal and create another deletion path. | Calendar dates and counts are derived from visible entries, so navigation stays synchronized and deleting an entry automatically removes its calendar marker. |
+| Individual deletion | Users need to remove one mistake or sensitive entry without destroying their whole journal. | The entry disappears from the feed and calendar immediately, while the protected retention and audit lifecycle preserves the documented evidence. |
+| Delete All Journal Data | Users need a clear way to remove their complete visible journal. | All active entries and conversations are hidden in one confirmed operation; audit records remain and each deleted record follows the same retention lifecycle. |
+| 30-day retention and scheduled privacy redaction | Immediate physical deletion would break the planned chain and audit model, while indefinite readable retention would be unnecessarily privacy-invasive. | Deleted content is hidden immediately, held in backend-only retention storage for the defined period, then replaced with `Deleted` while minimal lifecycle, cryptographic, and audit metadata remains. Cloud Scheduler invokes the worker so the promise is operational rather than documentation-only. |
+
+## Other implemented capabilities that must not be omitted
+
+The previous list is not the complete feature inventory. Include these capabilities when describing the product:
+
+- **Google Sign-In and per-user UID isolation:** Firebase Authentication assigns the identity; Cloud Run derives ownership from the verified UID, and Firestore rules restrict client reads to that user's namespace.
+- **AI Journal / Private Journal mode:** Each user can choose whether a new entry uses Gemini. Private Journal stores the original entry without Gemini, token usage, derived output, or model turns.
+- **Private notes:** Private Journal supports clearly labeled user-authored notes up to 1,000 characters. They are authenticated, hash-chained, audited, deleted, and retained like other protected journal material, but never sent to Gemini.
+- **Structured Gemini journaling:** AI Journal produces a summary, topics, allowlisted categories, a reflection question, and bounded contextual replies through a multi-turn conversation per entry.
+- **Resilience and graceful degradation:** The server uses a six-model fallback ladder, bounded retries, input limits, and preserves the RAW entry when Gemini is unavailable.
+- **RAW/DERIVED separation:** The user's original words remain distinct from Gemini-generated summaries, categories, reflections, and replies, which are labeled as derived content.
+- **Storage segregation:** Entries, conversation turns, preferences, usage, audit events, chain metadata, and backend-only retention records use separate user-scoped Firestore paths.
+- **Idempotent and validated requests:** Client request IDs prevent duplicate entry or reply writes, and server validation rejects empty or oversized requests before Gemini or persistence work.
+- **Accessible journal interface:** Journal cards can expand or collapse, long content uses bounded scrolling, and calendar selection expands and scrolls to the selected entry.
+- **Containerized production path:** Docker, Cloud Build, Artifact Registry, Cloud Run, dedicated build/runtime identities, Secret Manager, Cloud Scheduler, and the required Academy label provide a repeatable deployment boundary.
+
 ## Complete implementation map
 
 | Stack layer | Service or technology | Actual responsibility | Source evidence |
