@@ -236,7 +236,7 @@ Follow [SETUP_DOCUMENT_MAP.md](docs/SETUP_DOCUMENT_MAP.md) first for the complet
 - Firebase Authorized Domains and production smoke testing.
 - GitHub publishing and submission preparation.
 
-Current cloud state: Cloud Run revision `personal-gemini-journal-00026-vsd` is deployed in `asia-southeast1` from image tag `release-20260906-reply-hygiene` with immutable Artifact Registry image digest `sha256:82f1012be35429b7c89c25b1b233b37a9b1c2812a2a19f2882da8a90276a0582`, dedicated build/runtime service accounts, three Secret Manager bindings, the required cohort label, an enabled daily retention scheduler, and `ENFORCE_APP_CHECK=true`. Both Cloud Run hostnames return HTTP 200 for `/health` and `/` and the image is serving 100% of traffic. Authenticated browser App Check success/rejection evidence, a controlled due-record redaction, and final IAM review remain pending.
+Current cloud state: Cloud Run revision `personal-gemini-journal-00028-qsn` is deployed in `asia-southeast1` from image tag `release-20260906-reply-boundary` with immutable Artifact Registry image digest `sha256:627999cb0dd83ebae4f5cd39520abe58e19de6e37bdca70036a1ae08fc3ec40d`, dedicated build/runtime service accounts, three Secret Manager bindings, the required cohort label, an enabled daily retention scheduler, and `ENFORCE_APP_CHECK=true`. Both Cloud Run hostnames return HTTP 200 for `/health` and `/` and the image is serving 100% of traffic. Authenticated browser App Check success/rejection evidence, a controlled due-record redaction, and final IAM review remain pending.
 
 The following remain external deliverables until completed in Google Cloud and the Academy programme dashboard:
 
