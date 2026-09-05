@@ -1,7 +1,7 @@
 # Quick-Reference
 
-| ITEM | Links | 
-| --- | --- | 
+| ITEM | Links |
+| --- | --- |
 | Canonical URL | https://personal-gemini-journal-eazyegerma-as.a.run.app |
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
