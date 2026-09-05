@@ -217,7 +217,7 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 npx --yes firebase-tools@latest emulators:exec --only firestore,auth "npm test --prefix server"
 ```
 
-Current verified result: 44 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
+Current verified result as of 2026-09-06: 45 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
 
 The browser smoke suite currently covers both Privacy Guardian decisions, individual deletion confirmation, Calendar v1 behavior including selected-card expansion and mobile overflow protection, the AI Journal / Private Journal branch with mode-specific limits and private-note controls, and the journal-card accordion's bounded scrolling.
 
@@ -236,7 +236,7 @@ Follow [SETUP_DOCUMENT_MAP.md](docs/SETUP_DOCUMENT_MAP.md) first for the complet
 - Firebase Authorized Domains and production smoke testing.
 - GitHub publishing and submission preparation.
 
-Current cloud state: Cloud Run revision `personal-gemini-journal-00022-m6f` is deployed in `asia-southeast1` from image tag `release-20260905-input-hardening` with immutable Artifact Registry image digest `sha256:eaaf7252aa4c6f41b85cd87fd6dd7f1906ce82ffbdc4808b9dd2bef08041a9f0`, dedicated build/runtime service accounts, three Secret Manager bindings, the required cohort label, an enabled daily retention scheduler, and `ENFORCE_APP_CHECK=true`. Both Cloud Run hostnames return HTTP 200 for `/health` and `/` and the image is serving 100% of traffic. Authenticated browser App Check success/rejection evidence, a controlled due-record redaction, and final IAM review remain pending.
+Current cloud state: Cloud Run revision `personal-gemini-journal-00026-vsd` is deployed in `asia-southeast1` from image tag `release-20260906-reply-hygiene` with immutable Artifact Registry image digest `sha256:82f1012be35429b7c89c25b1b233b37a9b1c2812a2a19f2882da8a90276a0582`, dedicated build/runtime service accounts, three Secret Manager bindings, the required cohort label, an enabled daily retention scheduler, and `ENFORCE_APP_CHECK=true`. Both Cloud Run hostnames return HTTP 200 for `/health` and `/` and the image is serving 100% of traffic. Authenticated browser App Check success/rejection evidence, a controlled due-record redaction, and final IAM review remain pending.
 
 The following remain external deliverables until completed in Google Cloud and the Academy programme dashboard:
 
