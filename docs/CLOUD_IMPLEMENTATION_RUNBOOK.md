@@ -365,52 +365,6 @@ Verify:
 - The scheduler job is configured for the intended service and authentication path.
 - Secret references exist without exposing secret values.
 
-## Manual Production Verification
-
-Use fictional content only. Never use real credentials or personal journal content in screenshots or recordings.
-
-1. Open the deployed Cloud Run URL with a hard refresh.
-   - Expected: the application loads without a blank screen.
-2. Complete Google Sign-In.
-   - Expected: the private journal dashboard appears.
-3. Toggle between AI Journal and Private Journal.
-   - Expected: the preference saves for the signed-in UID, the status explains the active policy, and a new Private Journal entry saves without a Gemini request or derived conversation.
-4. Create a plain entry in AI Journal mode.
-   - Expected: Gemini-derived summary, topics, and a reflection prompt appear.
-5. Reply to the reflection.
-   - Expected: Gemini responds in context and the conversation turn is stored.
-6. Inspect the browser Network panel for the protected request such as /api/entries.
-   - Expected: the request contains X-Firebase-AppCheck and an Authorization bearer token.
-7. Copy the request as fetch, remove X-Firebase-AppCheck, and run it in the console.
-   - Expected: HTTP 401.
-8. Repeat with an invalid App Check value.
-   - Expected: HTTP 401.
-9. Trigger Privacy Guardian with the fictional fixture AKIAABCDEFGHIJKLMNOP.
-   - Expected: the modal appears before the content is sent to Gemini, offering Redact before sending to Gemini or Send as-is anyway.
-   - Note: this is an AWS-style fake credential fixture only. The application has no AWS integration.
-10. Choose each Privacy Guardian action once.
-   - Expected: the modal unmounts immediately after the selection and the intended request path continues.
-11. Create two fictional entries that belong to the same closed-set category.
-    - Expected: the UI displays the Related - shares a category relationship.
-12. Open the journal calendar.
-    - Expected: visible entries populate their dates; deleting or hiding an entry removes it from the calendar.
-13. Verify journal integrity.
-    - Expected: the response distinguishes total server-chain entries, visible entries, and pending-redaction entries. Example wording: CHAIN INTACT, total entries verified on server database, pending redaction count, visible entry count.
-14. Open Security Activity.
-    - Expected: audit events such as entry_created, pii_detected, and integrity_verified appear without exposing unnecessary secret content.
-15. Delete one entry.
-    - Expected: it disappears from the journal list and calendar, enters retention storage, and its audit history remains.
-16. Use Delete All Journal Data.
-    - Expected: all visible entries disappear, the confirmation modal closes after the action, retention records are created, and audit records remain.
-17. Confirm user isolation with a second test account.
-    - Expected: the second user cannot read, modify, or delete the first user's journal data through the application.
-18. Run one controlled retention fixture.
-    - Expected: after the configured retention threshold, content, reflection, summary, conversation text, topics, and PII metadata become Deleted or empty as implemented; timestamps, hashes, deletion metadata, and the separate audit record remain.
-19. Inspect Firestore using an authorized operator account.
-    - Expected: entries, conversation subcollections, retention collections, audit collections, hash fields, and deletion metadata match the documented data model.
-
-Record each check as PASS, FAIL, BLOCKED, or NOT RUN. Do not claim a production gate is complete from local tests alone.
-
 ## Integrity and Retention Semantics
 
 The journal chain is calculated server-side. Normal entry deletion does not erase the audit trail. Deleted entries are hidden from the journal UI immediately, their full records are retained in a protected retention container for 30 days, and the active collection retains a minimal tombstone for chain continuity.
@@ -480,43 +434,6 @@ Cloud Console can issue background requests for products or resources that are n
 ### Grammarly or browser-extension noise
 
 grm or Grammarly console messages are injected by the extension and are not application failures. The UI may add data-gram=false to journal fields, but production verification should also be repeated in a clean profile with extensions disabled.
-
-### Windows shell syntax
-
-PowerShell environment-variable syntax does not work in cmd.exe, and cmd.exe continuation syntax does not work in PowerShell. Use one shell consistently. In PowerShell use $env:NAME; in cmd use set NAME=value. Verify the active shell before running a deployment command.
-
-## Latest Verified Deployment Record
-
-Recorded 2026-09-05 after deploying strict input-boundary validation and the AI Journal / Private Journal mode.
-
-- Source commit: `3ec3ad8`
-- Docker image tag: `release-20260905-input-hardening`
-- Image digest: `sha256:eaaf7252aa4c6f41b85cd87fd6dd7f1906ce82ffbdc4808b9dd2bef08041a9f0`
-- Ready revision: `personal-gemini-journal-00022-m6f`
-- Traffic: 100 percent to the ready revision
-- App Check: enforced (`ENFORCE_APP_CHECK=true`)
-- Runtime identity: dedicated `personal-gemini-journal-run` service account
-- Required cohort label: `dev-tutorial=cloud-run-ai-challenge`
-- Retention scheduler: enabled at `0 2 * * *` in `asia-southeast1`
-- Canonical service URL: `https://personal-gemini-journal-eazyegerma-as.a.run.app`
-- Alternate service URL: `https://personal-gemini-journal-709422088585.asia-southeast1.run.app`
-- HTTP smoke: both service URLs returned `200` with the application HTML shell
-- Live AI-mode walkthrough: remains a manual operator check; use the fictional test sequence in the public test matrix
-
-## Private Execution Log Template
-
-Keep project-specific values in a private operator record unless they are explicitly safe to publish.
-
-| Time | Area | Action | Result | Evidence reference | Public-safe? |
-| --- | --- | --- | --- | --- | --- |
-| YYYY-MM-DD HH:MM | Firebase | App Check registration | PASS / BLOCKED | Console screenshot with secrets redacted | YES / NO |
-| YYYY-MM-DD HH:MM | Google Cloud | Provisioning | PASS / BLOCKED | Private command output | NO |
-| YYYY-MM-DD HH:MM | Cloud Build | Image build | PASS / BLOCKED | Build ID stored privately | NO |
-| YYYY-MM-DD HH:MM | Cloud Run | Deployment | PASS / BLOCKED | Service status without URL if needed | YES / NO |
-| YYYY-MM-DD HH:MM | Browser | Smoke verification | PASS / FAIL | Sanitized test result | YES |
-| YYYY-MM-DD HH:MM | Retention | Controlled redaction fixture | PASS / BLOCKED | Sanitized audit event | YES / NO |
-| YYYY-MM-DD HH:MM | IAM | Final least-privilege review | PASS / BLOCKED | Policy review record | NO |
-| YYYY-MM-DD HH:MM | Academy | Submission package | PASS / BLOCKED | Submission confirmation | YES / NO |
 
 ## Public Repository Safety
 
