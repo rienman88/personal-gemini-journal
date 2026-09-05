@@ -34,7 +34,7 @@ export default function JournalModeToggle({ mode, ready, disabled = false, error
     ? "Loading your saved preference..."
     : mode === "ai"
       ? "AI summaries, reflections, categories, and replies are enabled."
-      : "Entries are saved without Gemini processing or AI replies.";
+      : "Entries are saved without Gemini processing. You can still add private notes.";
 
   return (
     <section className="journal-mode-control" aria-labelledby="journal-mode-title">

@@ -20,7 +20,7 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 - Every entry and conversation turn is hash-chained for tamper evidence.
 - Deleting one entry or the entire journal hides it immediately, preserves the active chain with a tombstone, retains protected records for 30 days, and then redacts readable journal material while retaining minimal cryptographic and audit metadata.
 - The calendar and related-entry graph are derived from the live entry snapshot, so deletion cannot leave orphaned UI state or a second calendar data path.
-- A per-user AI Journal / Private Journal switch gives the user control over whether new entries use Gemini. Private entries retain the normal authenticated storage, hash, audit, calendar, deletion, and retention controls while making no Gemini or token-budget call.
+- A per-user AI Journal / Private Journal switch gives the user control over whether new entries use Gemini. Private entries retain the normal authenticated storage, hash, audit, calendar, deletion, and retention controls while making no Gemini or token-budget call; user-authored private notes remain available without model turns.
 
 ## Complete feature inventory
 
@@ -29,11 +29,11 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 | Authentication | Google Sign-In through Firebase Authentication; popup first, redirect fallback if popup fails; explicit `browserLocalPersistence` for trusted-device sessions; sign-out; auth-state loading and session listener; no custom application session cookie | `web/src/firebase.ts`, `web/src/components/AuthGate.tsx` |
 | User isolation | Verified Firebase ID token; server derives `req.uid`; Firestore rules scope reads to `/users/{uid}/...`; cross-user and unauthenticated reads denied | `server/src/middleware/auth.ts`, `firestore.rules` |
 | App authenticity | Firebase App Check client initialization with score-based reCAPTCHA Enterprise; token sent as `X-Firebase-AppCheck`; Admin SDK verification on every `/api` route when `ENFORCE_APP_CHECK=true` | `web/src/firebase.ts`, `web/src/lib/api.ts`, `server/src/middleware/appCheck.ts` |
-| Entry creation | Trimmed 8,000-character input with oversized values rejected using HTTP 400, required client request ID, idempotent duplicate protection, server Privacy Guardian scan, Gemini analysis, Firestore persistence | `server/src/routes/journal.ts`, `server/src/lib/inputValidation.ts` |
+| Entry creation | Mode-aware input: AI entries up to 3,000 characters and Private Journal entries up to 4,000; oversized values are rejected using HTTP 400, with required client request ID, idempotent duplicate protection, server Privacy Guardian scan for AI, Gemini analysis for AI, and Firestore persistence | `server/src/routes/journal.ts`, `server/src/lib/inputValidation.ts` |
 | Input validation | Empty values and entries/replies above their explicit limits are rejected before Gemini or persistence work | `server/src/lib/inputValidation.ts`, `server/test/inputValidation.test.ts` |
 | AI processing choice | Authenticated preference under `users/{uid}/meta/preferences`; server-enforced AI or Private Journal branch; each entry records `journalMode` and `aiUsed` | `server/src/routes/journal.ts`, `server/src/lib/journalMode.ts`, `web/src/components/JournalModeToggle.tsx` |
 | AI analysis | Structured summary, up to five topics, one or two closed-set categories, and one reflection question | `server/src/lib/geminiClient.ts` |
-| Multi-turn conversation | Reply input is strictly limited to 2,000 characters; each entry has an isolated conversation subcollection; full thread is displayed and latest 10 turns are sent to Gemini | `server/src/routes/journal.ts`, `web/src/components/ConversationThread.tsx` |
+| Multi-turn conversation | AI replies accept up to 1,500 characters and Gemini replies up to 1,000; private notes accept up to 1,000 and create user-only hash-chained turns; each entry has an isolated conversation subcollection, with latest 10 AI turns sent to Gemini | `server/src/routes/journal.ts`, `web/src/components/ConversationThread.tsx`, `server/src/lib/geminiClient.ts` |
 | Gemini resilience | Six-model fallback ladder; three structured-output attempts per model, for at most 18 structured attempts; plain replies use the ladder; malformed or unavailable AI never prevents RAW save | `server/src/lib/geminiClient.ts` |
 | Privacy Guardian | Detects AWS keys, Google API keys, generic secret assignments, email, phone, and US SSN patterns; redacts only the Gemini-bound copy; UI modal closes immediately on either decision | `server/src/lib/piiDetector.ts`, `web/src/components/PrivacyGuardianModal.tsx` |
 | RAW/DERIVED separation | User text remains RAW; Gemini summary, topics, categories, reflection, and model replies are DERIVED and labeled in the UI | `server/src/routes/journal.ts`, `web/src/components/JournalList.tsx` |
@@ -58,9 +58,9 @@ The differentiating feature is the privacy and integrity lifecycle around AI jou
 4. The user writes a journal entry and selects **Save entry**.
 5. The browser may preview sensitive content in AI Journal mode, but the server performs the trusted Privacy Guardian scan before Gemini.
 6. If an AI-mode match exists, the modal offers **Redact before sending to Gemini**, **Send as-is anyway**, or cancel. Either decision unmounts the modal immediately; the network save continues with the selected policy.
-7. Gemini returns a structured summary, topics, categories, and reflection question for AI Journal entries, or the entry is still saved with `geminiOk: false` if the AI ladder fails. Private Journal entries skip this branch and are labeled AI not used.
+7. Gemini returns a structured summary, topics, categories, and reflection question for AI Journal entries, or the entry is still saved with `geminiOk: false` if the AI ladder fails. Private Journal entries skip this branch and are labeled AI not used; they can later receive user-authored private notes.
 8. The entry appears in the live feed with RAW text, mode provenance, optional DERIVED output, category pills, related entries, integrity shortcode, and an isolated conversation thread when applicable.
-9. A reply follows the same Privacy Guardian boundary for AI entries; Private Journal entries do not enable Gemini replies.
+9. An AI reply follows the same Privacy Guardian boundary and Gemini ladder. A Private Journal continuation is an explicitly labeled private note: it is authenticated and hash-chained, but never sent to Gemini and never creates a model reply.
 10. Security Activity shows metadata-only events. Integrity verification checks the entry and conversation chains.
 11. The side calendar marks dates from the same live entries. Selecting a date navigates to the first matching entry and shows a count when multiple entries share a date.
 12. Removing one entry or all entries hides the journal content and calendar markers immediately. The audit record remains.
@@ -187,13 +187,13 @@ The submission keeps the current architecture intentionally small. Provider abst
 | Root production build | Passed |
 | Server TypeScript build | Passed |
 | App Check middleware tests | 2 passed |
-| Emulator-backed server suite | 41 passed, 2 intentionally pending |
-| Browser smoke suite | 5 passed |
-| AI mode policy tests | AI default compatibility and Private Journal no-Gemini policy passed |
-| AI mode browser smoke | Toggle switches modes; Private Journal sensitive text saves without opening Privacy Guardian |
+| Emulator-backed server suite | 44 passed, 2 intentionally pending |
+| Browser smoke suite | 6 passed |
+| AI mode policy tests | AI default compatibility and Private Journal no-Gemini/private-note policy passed |
+| AI mode browser smoke | Toggle switches modes; mode-specific entry/note limits are visible; Private Journal sensitive text saves without opening Privacy Guardian |
 | Privacy Guardian modal smoke | Both Redact and Send as-is unmount immediately while the request remains pending |
 | Individual deletion smoke | Modal closes after server confirmation and reports removal |
-| Calendar smoke | Marked dates, counts, navigation, and 375px overflow behavior pass |
+| Calendar smoke | Marked dates, counts, navigation, collapsed-card expansion, and 375px overflow behavior pass |
 | Provisioning script syntax | PowerShell parse passed |
 
 ### Manual execution log

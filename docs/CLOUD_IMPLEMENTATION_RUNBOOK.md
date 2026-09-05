@@ -45,6 +45,9 @@ The current implementation includes:
 - Firebase Google account sign-in.
 - Per-user identity isolation using the authenticated Firebase UID.
 - User-controlled AI Journal / Private Journal mode persisted per user and enforced by the Express API before any Gemini operation.
+- Mode-specific limits enforced in both UI and API: AI entries 3,000 characters, AI replies 1,500, Gemini replies 1,000, Private Journal entries 4,000, and private notes 1,000.
+- Private Journal supports clearly labeled user-authored private notes in the protected conversation subcollection; notes are hash-chained and audited but never sent to Gemini or followed by a model turn.
+- Journal cards support accessible collapse/expand controls, bounded scrolling for long content, and calendar selection expands the target entry before scrolling to it.
 - Server-side Firebase Admin bearer-token verification.
 - Firebase App Check with score-based reCAPTCHA Enterprise for the public web client.
 - Fail-closed App Check validation for protected API routes.

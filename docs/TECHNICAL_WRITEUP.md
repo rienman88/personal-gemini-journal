@@ -115,14 +115,14 @@ The application also has independent state and cost boundaries after authenticat
 
 `POST /api/entries`, in the exact order the code runs:
 1. Reject if unauthenticated (`req.uid`, never a client field).
-2. Trim input, reject empty content, and reject values over 8000 chars; reject a missing `clientRequestId` before any Gemini or persistence work.
+ 2. Trim input, reject empty content, and enforce the selected mode's entry limit: 3,000 characters for AI Journal or 4,000 for Private Journal. Reject a missing `clientRequestId` before any Gemini or persistence work.
 3. **Idempotency check** — if this `clientRequestId` already produced an entry, return that entry instead of writing a duplicate. Protects against a flaky-network double-submit creating two entries.
 4. Read the authenticated user's `users/{uid}/meta/preferences` document. Missing or legacy preference data defaults to AI Journal.
 5. Enforce the per-user request rate limit. Only AI Journal continues to token-budget enforcement.
 6. If the server-selected mode is AI Journal, **Privacy Guardian runs server-side** and a redacted Gemini-bound copy is built when required. The hash and stored `content` always commit to the original RAW text; only the Gemini-bound copy is altered. If the mode is Private Journal, this entire outbound-AI branch is skipped.
 7. Call Gemini through `analyzeEntry` only for AI Journal entries (ladder + schema retry inside).
 8. **One Firestore transaction**: read the current chain head, compute `sha256(prevHash|uid|content|createdAt)`, and write the entry. Every entry records `journalMode` and `aiUsed`; AI-derived fields are present only when analysis is used.
-9. **Seed the conversation subcollection** with Gemini's reflection question only for AI Journal entries. Private Journal creates no conversation and rejects later replies with HTTP 409.
+ 9. **Seed the conversation subcollection** with Gemini's reflection question only for AI Journal entries. Private Journal creates no model turn initially, but its user may append authenticated private-note turns later without a Gemini request.
 10. Audit events record mode changes and entry creation without journal text; PII and fallback events are added only where applicable.
 11. Respond only after every write above has actually committed — never reports success before persistence.
 
@@ -139,7 +139,7 @@ const CONTEXT_WINDOW_TURNS = 10;
 const history = fullHistory.slice(-CONTEXT_WINDOW_TURNS);
 history.push({ role: "user", text: geminiInput });
 ```
-This exists specifically because the first version of this route sent the *entire* thread on every reply, which meant token cost and latency grew without bound as a conversation got longer. The fix keeps "reply as long as you like" true from the user's side while keeping what's actually sent to the model fixed-size.
+ This exists specifically because the first version of this route sent the *entire* thread on every reply, which meant token cost and latency grew without bound as a conversation got longer. AI replies accept up to 1,500 user characters and Gemini output is capped at 1,000 characters, while Private Journal notes accept up to 1,000 characters and bypass Gemini entirely. Only the latest ten AI turns are sent to the model.
 
 Hash-chaining for a reply uses whichever is more recent — the last conversation turn, or the entry itself if this is the first reply — so a conversation's tamper-evidence is continuous with the entry it's attached to, not a separate, disconnected chain.
 
@@ -159,7 +159,7 @@ The private `POST /internal/retention/redact` endpoint processes due retention e
 
 ## 6.1 User-controlled AI processing choice
 
-The dashboard exposes **AI Journal** and **Private Journal** as an authenticated per-user preference. AI Journal is the backward-compatible default and follows the existing Privacy Guardian, Gemini, conversation, token-budget, category, calendar, integrity, audit, deletion, and retention paths. Private Journal keeps the useful journal guarantees — RAW storage, owner isolation, hash chaining, audit metadata, calendar visibility, deletion, and retention — while deliberately making no Gemini call, consuming no Gemini token budget, creating no conversation, and accepting no Gemini reply. This is a server-enforced policy, not a client-only promise. Older entries without `journalMode` are interpreted as AI Journal.
+ The dashboard exposes **AI Journal** and **Private Journal** as an authenticated per-user preference. AI Journal is the backward-compatible default and follows the existing Privacy Guardian, Gemini, conversation, token-budget, category, calendar, integrity, audit, deletion, and retention paths. Private Journal keeps the useful journal guarantees — RAW storage, owner isolation, hash chaining, audit metadata, calendar visibility, deletion, and retention — while deliberately making no Gemini call, consuming no Gemini token budget, or creating model turns. It allows user-authored private notes in the same protected conversation subcollection. This is a server-enforced policy, not a client-only promise. Older entries without `journalMode` are interpreted as AI Journal.
 
 ## 7. The Gemini client: fallback ladder and verified recovery behavior
 
@@ -208,15 +208,15 @@ Runs entirely client-side, from entries already loaded for the list view — no 
 - `tsc --noEmit` compiles clean on both `server/` and `web/` against the real, installed `@google/genai`, `firebase-admin`, `express`, and React type definitions.
 - `vite build` succeeds; the compiled server was actually run and hit with `curl` — confirmed it serves the real built `index.html` (this caught a real off-by-one in the static-file path during development) and that `/api/entries` returns 401 for both a missing and a garbage auth token.
 - The pure-logic test suite passes: Privacy Guardian detection/redaction (including on replies), the fallback ladder (including both regressions above, now fixed), conversation continuation, and the static no-mock-provider guard.
-- The emulator-backed server suite passes with 41 passing and 2 intentionally pending specs. The passing set includes App Check middleware behavior, input length validation, retention redaction logic, worker-token authentication, legacy-entry compatibility, Private Journal policy, and Firestore rules isolation for entries, conversation turns, audit records, and retention records.
-- The browser smoke suite passes with 5 tests: both Privacy Guardian decisions unmount the modal while the request remains pending, individual deletion closes after confirmation, the integrity badge distinguishes total/pending/visible counts, Calendar v1 marks, counts, and navigates to journal dates without mobile horizontal overflow, and Private Journal saves without opening Privacy Guardian.
+ - The emulator-backed server suite passes with 44 passing and 2 intentionally pending specs. The passing set includes App Check middleware behavior, mode-specific input length validation, bounded Gemini replies, retention redaction logic, worker-token authentication, legacy-entry compatibility, Private Journal policy, and Firestore rules isolation for entries, conversation turns, audit records, and retention records.
+ - The browser smoke suite passes with 6 tests: both Privacy Guardian decisions unmount the modal while the request remains pending, individual deletion closes after confirmation, the integrity badge distinguishes total/pending/visible counts, Calendar v1 marks, counts, expands a collapsed selected card, and navigates to journal dates without mobile horizontal overflow, the journal mode flow exposes its mode-specific limits and private-note control, and the accordion provides bounded scrolling.
 - The original manual execution log records 9 of 9 passed checks across entry creation, multi-turn replies, authentication persistence, Privacy Guardian interception, integrity verification, audit activity, category clustering, and raw Firestore inspection. `TEST_RESULTS.md` now adds the feature-by-feature manual matrix, including AI Journal / Private Journal mode, and marks operator-only checks separately.
 
 The browser smoke tests additionally prove that both Privacy Guardian decisions unmount the modal immediately while the request remains pending, individual deletion closes after server confirmation, Calendar v1 remains usable at 375px width, and the private-mode branch does not open the Privacy Guardian modal for sensitive-looking input.
 
 **Verified staging, with final gates kept explicit:**
 - A real Cloud Run deployment has occurred in the target project. Revision `personal-gemini-journal-00022-m6f` serves image tag `release-20260905-input-hardening` with `ENFORCE_APP_CHECK=true`, `/health` returns HTTP 200, both current hostnames load their shells, the runtime identity is dedicated, and the required cohort label is present.
-- Strict input boundaries are enforced before Gemini or persistence: entries over 8,000 characters and replies over 2,000 characters receive HTTP 400 instead of being silently truncated.
+- Strict mode-aware input boundaries are enforced before Gemini or persistence: AI entries over 3,000, AI replies over 1,500, Private Journal entries over 4,000, or private notes over 1,000 characters receive HTTP 400 instead of being silently truncated. Gemini replies are bounded to 1,000 characters.
 - Secret Manager bindings, the ready retention index, protected worker route, and enabled Scheduler invocation have been verified in staging. The valid empty-batch worker response and Scheduler HTTP 200 do not substitute for a due-record redaction test.
 - App Check code support and Cloud Run enforcement are complete, but Firebase Console Web-app registration confirmation and final valid-token/missing-token browser testing are external release steps.
 - The live Gemini authenticity test runs only when `GEMINI_API_KEY_TEST` is supplied, and the route-level idempotency test remains a named pending specification until a complete route harness is added.

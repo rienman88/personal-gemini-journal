@@ -23,7 +23,10 @@ export default defineConfig({
         const isIntegrityBadge =
           normalizedImporter?.endsWith("/src/components/IntegrityBadge.tsx") ||
           normalizedImporter?.endsWith("/src/components/IntegrityBadge.js");
-        if ((isJournalEntryForm || isDeleteEntryModal || isIntegrityBadge) && normalizedSource === "../lib/api") {
+        const isConversationThread =
+          normalizedImporter?.endsWith("/src/components/ConversationThread.tsx") ||
+          normalizedImporter?.endsWith("/src/components/ConversationThread.js");
+        if ((isJournalEntryForm || isDeleteEntryModal || isIntegrityBadge || isConversationThread) && normalizedSource === "../lib/api") {
           return mockApi;
         }
         return null;

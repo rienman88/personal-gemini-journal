@@ -22,7 +22,7 @@ This document covers the LLM-specific layer. The broader application controls ar
 - Manual verification: Step 29 checks that an AI failure does not discard or expose the RAW content.
 - Honest limit: Base64, homoglyph, obfuscated, encoded, and novel secrets can evade deterministic patterns. This is an explicit boundary, not a completed defense claim.
 
-Private Journal is an additional user-controlled disclosure boundary: when the authenticated preference is `private`, the server does not call Gemini, does not run the Gemini-bound Privacy Guardian decision path, and does not create a conversation. This reduces disclosure risk by avoiding model transmission altogether, but it does not replace authentication, App Check, Firestore isolation, or the trusted-runtime boundary.
+Private Journal is an additional user-controlled disclosure boundary: when the authenticated preference is `private`, the server does not call Gemini, does not run the Gemini-bound Privacy Guardian decision path, and does not create model turns. User-authored private notes may still be appended to the entry's authenticated, hash-chained conversation subcollection. This reduces disclosure risk by avoiding model transmission altogether, but it does not replace authentication, App Check, Firestore isolation, or the trusted-runtime boundary.
 
 ## LLM03: Supply Chain - addressed by deployment practice
 
@@ -81,7 +81,7 @@ Private Journal is an additional user-controlled disclosure boundary: when the a
 - Firebase App Check can reject scripted requests before the journal handler when enforcement is enabled; it is a secondary abuse signal, not a replacement for Firebase Auth.
 - The per-user AI Journal / Private Journal choice is enforced server-side. Private Journal avoids Gemini processing and token usage, while still using authenticated storage and request-rate controls.
 - Output tokens are bounded to 512 for analysis and 384 for replies.
-- Inputs are trimmed and accepted only up to 8,000 characters for entries and 2,000 characters for replies; oversized requests are rejected with HTTP 400 before Gemini work.
+- Inputs are trimmed and mode-aware: AI entries up to 3,000 characters, AI replies up to 1,500, Private Journal entries up to 4,000, and private notes up to 1,000. Gemini replies are capped at 1,000 characters; oversized requests are rejected with HTTP 400 before persistence or Gemini work.
 - Conversation context is capped at the latest ten turns.
 - Manual verification: Step 36 tests the request limiter; Step 37 tests the daily token budget; Step 50 tests final App Check enforcement; Step 54 checks the bounded scheduled worker batch.
 
@@ -98,7 +98,7 @@ Private Journal is an additional user-controlled disclosure boundary: when the a
 | Step 50 | App Check enforcement | Deployed revision rejects missing/invalid App Check with 401 and accepts valid Auth plus App Check. | **Cloud Run enforcement deployed; live browser token test READY TO RUN** |
 | Steps 55-56 | Docker, secrets, identities, and image supply chain | Image/build input contains no server secret; build and runtime access are separated and least-privilege bindings are present. | **PASSED by deployment/code review; clean-machine recheck READY TO RUN** |
 | Step 60 | Release rollback | Traffic can return to a known-good immutable revision without deleting data, rules, or secrets. | **READY TO RUN - OPERATOR** |
-| Step 61 | AI Journal / Private Journal policy | Private Journal persists RAW text and security metadata without Gemini, derived output, token usage, or conversation creation; AI Journal preserves the existing guarded path. | **Policy tests and browser smoke PASSED; live preference persistence READY TO RUN** |
+| Step 61 | AI Journal / Private Journal policy | Private Journal persists RAW text and security metadata without Gemini, derived output, token usage, or model turns; user-authored private notes are allowed as hash-chained turns. AI Journal preserves the guarded model path. | **Policy tests and browser smoke PASSED; live preference persistence READY TO RUN** |
 
 ## What this means for the submission
 

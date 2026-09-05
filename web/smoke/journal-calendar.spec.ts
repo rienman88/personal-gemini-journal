@@ -11,6 +11,8 @@ test("journal calendar marks entry days and navigates to the first entry", async
 
   await expect(markedDay).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#entry-first-entry")).toBeInViewport();
+  await expect(page.locator("#entry-first-entry .entry-card-body")).toBeVisible();
+  await expect(page.locator("#entry-first-entry").getByRole("button", { name: /Collapse journal entry/ })).toHaveAttribute("aria-expanded", "true");
 
   await page.setViewportSize({ width: 375, height: 800 });
   await page.reload();

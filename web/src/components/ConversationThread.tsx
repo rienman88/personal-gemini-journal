@@ -1,16 +1,16 @@
 /**
- * LOCAL — ships in the frontend bundle.
+ * LOCAL - ships in the frontend bundle.
  *
- * The actual "multi-turn" feature: a live thread of replies scoped to one
- * entry, stored in entries/{entryId}/conversation. Privacy Guardian runs
- * on every reply here too, not just the original entry — a secret can be
- * typed into a follow-up message just as easily as the first one.
+ * AI Journal replies use Gemini through the protected API. Private Journal
+ * continuations use the same authenticated, hash-chained conversation path
+ * but append only a user-authored note and never call Gemini.
  */
 import { useEffect, useState } from "react";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { scanForSensitiveContent, PiiMatch } from "../lib/piiDetector";
 import { JournalMode, replyToEntry } from "../lib/api";
+import { JOURNAL_CONTINUATION_LIMITS } from "../lib/limits";
 import PrivacyGuardianModal from "./PrivacyGuardianModal";
 
 interface Turn {
@@ -26,12 +26,9 @@ export default function ConversationThread({ entryId, journalMode = "ai" }: { en
   const [pending, setPending] = useState<PiiMatch[] | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const continuationLimit = JOURNAL_CONTINUATION_LIMITS[journalMode];
 
   useEffect(() => {
-    if (journalMode === "private") {
-      setTurns([]);
-      return;
-    }
     const uid = auth.currentUser?.uid;
     if (!uid) return;
     const q = query(collection(db, `users/${uid}/entries/${entryId}/conversation`), orderBy("createdAt", "asc"));
@@ -41,8 +38,11 @@ export default function ConversationThread({ entryId, journalMode = "ai" }: { en
   }, [entryId, journalMode]);
 
   function requestSend() {
-    if (journalMode === "private") return;
     if (!reply.trim()) return;
+    if (journalMode === "private") {
+      void send(false);
+      return;
+    }
     const matches = scanForSensitiveContent(reply);
     if (matches.length > 0) setPending(matches);
     else void send(false);
@@ -56,7 +56,7 @@ export default function ConversationThread({ entryId, journalMode = "ai" }: { en
       setReply("");
       setPending(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send that reply — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't send that continuation - try again.");
     } finally {
       setSending(false);
     }
@@ -67,37 +67,41 @@ export default function ConversationThread({ entryId, journalMode = "ai" }: { en
     void send(acknowledgedSend);
   }
 
-  if (journalMode === "private") {
-    return (
-      <div className="conversation-thread private-conversation">
-        <p className="derived-label">PRIVATE JOURNAL — NO GEMINI REPLIES</p>
-        <p>Replies are disabled for this entry because it was saved without AI processing.</p>
-      </div>
-    );
-  }
+  const isPrivate = journalMode === "private";
 
   return (
-    <div className="conversation-thread">
-      {turns.map((t) => (
-        <div key={t.id} className={t.role === "model" ? "turn turn-model" : "turn turn-user"}>
-          {t.text}
+    <div className={`conversation-thread${isPrivate ? " private-conversation" : ""}`}>
+      <p className="derived-label">{isPrivate ? "PRIVATE JOURNAL - PRIVATE NOTES" : "AI JOURNAL - GEMINI REPLIES"}</p>
+      {turns.map((turn) => (
+        <div key={turn.id} className={turn.role === "model" ? "turn turn-model" : "turn turn-user"}>
+          {turn.text}
         </div>
       ))}
       <div className="reply-row">
-        <input
+        <textarea
           value={reply}
-          onChange={(e) => setReply(e.target.value)}
-          placeholder="Reply…"
+          onChange={(event) => setReply(event.target.value)}
+          placeholder={isPrivate ? "Add a private note..." : "Reply..."}
           disabled={sending}
-          aria-label="Reply to this entry"
+          aria-label={isPrivate ? "Add a private note to this entry" : "Reply to this entry"}
           data-gramm="false"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") requestSend();
+          maxLength={continuationLimit}
+          rows={3}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              requestSend();
+            }
           }}
         />
-        <button onClick={requestSend} disabled={sending || !reply.trim()}>
-          {sending ? "…" : "Reply"}
-        </button>
+        <div className="reply-controls">
+          <span className="character-counter" aria-live="polite">
+            {reply.length}/{continuationLimit}
+          </span>
+          <button onClick={requestSend} disabled={sending || !reply.trim()}>
+            {sending ? "..." : isPrivate ? "Add private note" : "Reply"}
+          </button>
+        </div>
       </div>
       {error && (
         <p className="auth-error" role="alert">

@@ -1,5 +1,7 @@
-export const MAX_ENTRY_CHARS = 8000;
-export const MAX_REPLY_CHARS = 2000;
+export const MAX_AI_ENTRY_CHARS = 3000;
+export const MAX_PRIVATE_ENTRY_CHARS = 4000;
+export const MAX_AI_REPLY_CHARS = 1500;
+export const MAX_PRIVATE_NOTE_CHARS = 1000;
 
 type BoundedTextResult = { ok: true; value: string } | { ok: false; error: string };
 

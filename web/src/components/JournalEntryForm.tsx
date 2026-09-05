@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { scanForSensitiveContent, PiiMatch } from "../lib/piiDetector";
 import { createEntry, JournalMode } from "../lib/api";
+import { JOURNAL_ENTRY_LIMITS } from "../lib/limits";
 import PrivacyGuardianModal from "./PrivacyGuardianModal";
 
 export default function JournalEntryForm({ journalMode = "ai", disabled = false }: { journalMode?: JournalMode; disabled?: boolean }) {
@@ -15,6 +16,7 @@ export default function JournalEntryForm({ journalMode = "ai", disabled = false 
   const [pending, setPending] = useState<PiiMatch[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const entryLimit = JOURNAL_ENTRY_LIMITS[journalMode];
 
   useEffect(() => {
     if (journalMode === "private") setPending(null);
@@ -60,7 +62,11 @@ export default function JournalEntryForm({ journalMode = "ai", disabled = false 
         disabled={disabled || saving}
         aria-label="Journal entry"
         data-gramm="false"
+        maxLength={entryLimit}
       />
+      <span className="character-counter" aria-live="polite">
+        {content.length}/{entryLimit}
+      </span>
       {error && (
         <p className="auth-error" role="alert">
           {error}

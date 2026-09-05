@@ -53,7 +53,13 @@ function monthDays(viewDate: Date): Array<Date | null> {
   });
 }
 
-export default function JournalCalendar({ entries }: { entries: CalendarEntry[] }) {
+export default function JournalCalendar({
+  entries,
+  onSelectEntry,
+}: {
+  entries: CalendarEntry[];
+  onSelectEntry?: (entryId: string) => void;
+}) {
   const [viewDate, setViewDate] = useState(() => initialMonth(entries));
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
@@ -82,7 +88,11 @@ export default function JournalCalendar({ entries }: { entries: CalendarEntry[] 
     if (!matchingIds?.length) return;
 
     setSelectedDateKey(key);
-    document.getElementById(`entry-${matchingIds[0]}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const entryId = matchingIds[0];
+    onSelectEntry?.(entryId);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`entry-${entryId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   function goToToday() {

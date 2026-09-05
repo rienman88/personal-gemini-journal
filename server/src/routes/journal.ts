@@ -16,7 +16,13 @@ import { recordAuditEvent } from "../lib/audit";
 import { computeHash, GENESIS } from "../lib/hashChain";
 import { archiveAndTombstoneEntry, RETENTION_DAYS } from "../lib/retention";
 import { getJournalModePlan, journalModeFromData, parseJournalMode, JournalMode } from "../lib/journalMode";
-import { readBoundedText, MAX_ENTRY_CHARS, MAX_REPLY_CHARS } from "../lib/inputValidation";
+import {
+  readBoundedText,
+  MAX_AI_ENTRY_CHARS,
+  MAX_PRIVATE_ENTRY_CHARS,
+  MAX_AI_REPLY_CHARS,
+  MAX_PRIVATE_NOTE_CHARS,
+} from "../lib/inputValidation";
 
 export const journalRouter = Router();
 
@@ -86,17 +92,20 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
   const uid = requireUid(req, res);
   if (!uid) return;
 
-  const contentResult = readBoundedText(req.body?.content, "content", MAX_ENTRY_CHARS);
   const clientRequestId = String(req.body?.clientRequestId ?? "");
   const acknowledgedSend = req.body?.acknowledgedSend === true;
 
-  if (!contentResult.ok) return void res.status(400).json({ error: contentResult.error });
-  const content = contentResult.value;
   if (!clientRequestId) return void res.status(400).json({ error: "clientRequestId is required" });
 
   const db = getFirestore();
 
   try {
+    const journalMode = await getUserJournalMode(db, uid);
+    const entryLimit = journalMode === "private" ? MAX_PRIVATE_ENTRY_CHARS : MAX_AI_ENTRY_CHARS;
+    const contentResult = readBoundedText(req.body?.content, "content", entryLimit);
+    if (!contentResult.ok) return void res.status(400).json({ error: contentResult.error });
+    const content = contentResult.value;
+
     const existing = await db
       .collection(`users/${uid}/entries`)
       .where("clientRequestId", "==", clientRequestId)
@@ -107,7 +116,6 @@ journalRouter.post("/entries", async (req: AuthedRequest, res: Response) => {
       return void res.json({ id: doc.id, hash: doc.data().hash, deduplicated: true });
     }
 
-    const journalMode = await getUserJournalMode(db, uid);
     const modePlan = getJournalModePlan(journalMode);
 
     await enforceRateLimit(uid);
@@ -217,12 +225,9 @@ journalRouter.post("/entries/:entryId/reply", async (req: AuthedRequest, res: Re
   if (!uid) return;
 
   const { entryId } = req.params;
-  const textResult = readBoundedText(req.body?.text, "text", MAX_REPLY_CHARS);
   const clientRequestId = String(req.body?.clientRequestId ?? "");
   const acknowledgedSend = req.body?.acknowledgedSend === true;
 
-  if (!textResult.ok) return void res.status(400).json({ error: textResult.error });
-  const text = textResult.value;
   if (!clientRequestId) return void res.status(400).json({ error: "clientRequestId is required" });
 
   const db = getFirestore();
@@ -237,14 +242,46 @@ journalRouter.post("/entries/:entryId/reply", async (req: AuthedRequest, res: Re
       return void res.status(410).json({ error: "entry deleted" });
     }
 
-    if (journalModeFromData(entrySnap.data()) === "private") {
-      return void res.status(409).json({ error: "Private Journal entries do not support Gemini replies" });
-    }
+    const journalMode = journalModeFromData(entrySnap.data());
+    const replyLimit = journalMode === "private" ? MAX_PRIVATE_NOTE_CHARS : MAX_AI_REPLY_CHARS;
+    const textResult = readBoundedText(req.body?.text, journalMode === "private" ? "private note" : "text", replyLimit);
+    if (!textResult.ok) return void res.status(400).json({ error: textResult.error });
+    const text = textResult.value;
 
     const existing = await conversationRef.where("clientRequestId", "==", clientRequestId).limit(1).get();
     if (!existing.empty) return void res.json({ turnId: existing.docs[0].id, deduplicated: true });
 
     await enforceRateLimit(uid);
+
+    if (journalMode === "private") {
+      const historySnap = await conversationRef.orderBy("createdAt", "asc").get();
+      const lastTurn = historySnap.docs[historySnap.docs.length - 1];
+      const entryHash = entrySnap.data()!.hash as string;
+      const prevHash = lastTurn ? (lastTurn.data().hash as string) : entryHash;
+      const createdAt = new Date().toISOString();
+      const hash = computeHash(prevHash, uid, text, createdAt);
+      const turnRef = conversationRef.doc();
+
+      await db.runTransaction(async (tx) => {
+        const latestEntry = await tx.get(entryRef);
+        const latestState = latestEntry.data()?.deletionState;
+        if (!latestEntry.exists || latestState === "deleted" || latestState === "deleting") {
+          throw new EntryDeletedError();
+        }
+        tx.create(turnRef, {
+          role: "user",
+          text,
+          clientRequestId,
+          createdAt,
+          prevHash,
+          hash,
+        });
+      });
+
+      await recordAuditEvent(uid, "private_note_created", "success", { entryId, turnId: turnRef.id });
+      return void res.json({ userTurnId: turnRef.id, modelTurnId: null, geminiOk: false, journalMode });
+    }
+
     await enforceTokenBudget(uid);
 
     // --- Privacy Guardian runs again here — a secret can be typed into a
@@ -331,8 +368,8 @@ journalRouter.post("/entries/:entryId/reply", async (req: AuthedRequest, res: Re
       await recordAuditEvent(uid, "gemini_fallback", "failure", { reason: result.reason.slice(0, 200) });
     }
 
-    await recordAuditEvent(uid, "reply_created", "success", { entryId, turnId: userTurnRef.id });
-    res.json({ userTurnId: userTurnRef.id, modelTurnId, geminiOk: result.ok });
+    await recordAuditEvent(uid, "reply_created", "success", { entryId, turnId: userTurnRef.id, journalMode });
+    res.json({ userTurnId: userTurnRef.id, modelTurnId, geminiOk: result.ok, journalMode });
   } catch (err) {
     console.error("POST /api/entries/:entryId/reply error:", err);
     if (err instanceof EntryDeletedError) {

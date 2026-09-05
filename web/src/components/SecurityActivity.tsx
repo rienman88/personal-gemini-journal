@@ -20,7 +20,8 @@ type AuditEventType =
   | "data_deleted"
   | "entry_deleted"
   | "entry_redacted"
-  | "journal_mode_changed";
+  | "journal_mode_changed"
+  | "private_note_created";
 
 interface AuditEvent {
   id: string;
@@ -39,6 +40,8 @@ function describeEvent(event: AuditEvent): { label: string; detail?: string; ton
       return { label: "Entry saved", tone: "neutral" };
     case "reply_created":
       return { label: "Reply saved", tone: "neutral" };
+    case "private_note_created":
+      return { label: "Private note saved", tone: "neutral" };
     case "pii_detected": {
       const categories = typeof event.detail?.categories === "string" ? event.detail.categories : undefined;
       return {

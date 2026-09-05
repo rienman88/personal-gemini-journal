@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import JournalModeToggle from "../src/components/JournalModeToggle.tsx";
 import JournalEntryForm from "../src/components/JournalEntryForm.tsx";
+import ConversationThread from "../src/components/ConversationThread.tsx";
 import { JournalMode } from "../src/lib/api";
 import "../src/index.css";
 
@@ -13,6 +14,9 @@ function SmokeHarness() {
       <JournalModeToggle mode={mode} ready onChange={async (nextMode) => setMode(nextMode)} />
       <div data-testid="private-entry-flow">
         <JournalEntryForm journalMode={mode} />
+      </div>
+      <div data-testid="private-note-flow">
+        <ConversationThread entryId="private-entry" journalMode={mode} />
       </div>
     </main>
   );

@@ -19,7 +19,8 @@ export type AuditEventType =
   | "data_deleted"
   | "entry_deleted"
   | "entry_redacted"
-  | "journal_mode_changed";
+  | "journal_mode_changed"
+  | "private_note_created";
 
 export async function recordAuditEvent(
   uid: string,

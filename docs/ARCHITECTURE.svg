@@ -100,12 +100,13 @@
   <text x="1130" y="393" class="label">SECURITY RULES</text>
   <text x="1130" y="415" class="small">Owner-scoped reads; client writes denied.</text>
 
-  <rect x="1100" y="490" width="385" height="155" fill="#eaf5f3" class="box"/>
+  <rect x="1100" y="490" width="385" height="175" fill="#eaf5f3" class="box"/>
   <text x="1130" y="526" class="card-title">Gemini API</text>
   <text x="1130" y="556" class="body">Structured summaries, topics, categories,</text>
-  <text x="1130" y="579" class="body">reflection prompts, and conversation replies.</text>
-  <text x="1130" y="612" class="small">Receives bounded input; Privacy Guardian</text>
-  <text x="1130" y="630" class="small">redacts detected content unless consented.</text>
+  <text x="1130" y="579" class="body">reflection prompts and AI replies only.</text>
+  <text x="1130" y="604" class="body">Private notes never reach this boundary.</text>
+  <text x="1130" y="628" class="small">Receives bounded input; Privacy Guardian</text>
+  <text x="1130" y="646" class="small">redacts detected content unless consented.</text>
 
   <rect x="1100" y="682" width="385" height="92" fill="#f6e7d1" class="box"/>
   <text x="1130" y="716" class="card-title">Secret Manager</text>

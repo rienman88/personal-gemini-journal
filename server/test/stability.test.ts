@@ -4,7 +4,7 @@
  *   cd server && npm install && npm test
  */
 import { expect } from "chai";
-import { analyzeEntry, continueConversation } from "../src/lib/geminiClient";
+import { analyzeEntry, continueConversation, MAX_GEMINI_REPLY_CHARS } from "../src/lib/geminiClient";
 
 const VALID_JSON = JSON.stringify({
   summary: "ok",
@@ -117,6 +117,19 @@ describe("Stability", () => {
       const result = await continueConversation("fake-key", [{ role: "user", text: "hi" }], caller);
       expect(result.ok).to.equal(true);
       expect(calls).to.equal(2);
+    });
+
+    it("bounds a long Gemini reply at a complete word or sentence", async () => {
+      const result = await continueConversation(
+        "fake-key",
+        [{ role: "user", text: "Please give a detailed reflection." }],
+        async () => `${"A useful reflection sentence with enough context. ".repeat(100)}`
+      );
+      expect(result.ok).to.equal(true);
+      if (result.ok) {
+        expect(result.text.length).to.be.at.most(MAX_GEMINI_REPLY_CHARS);
+        expect(result.text.endsWith(".")).to.equal(true);
+      }
     });
   });
 

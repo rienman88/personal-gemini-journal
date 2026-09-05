@@ -88,7 +88,7 @@ The strongest original feature is the **per-entry AI Journal / Private Journal d
 
 The feature becomes stronger because it is connected to the rest of the lifecycle:
 
-- Private Journal saves without Gemini, summaries, categories, reflections, token usage, or AI replies.
+- Private Journal saves without Gemini, summaries, categories, reflections, token usage, or model replies, while allowing clearly labeled user-authored private notes.
 - AI Journal uses Privacy Guardian before Gemini receives the content.
 - The server, not the browser, enforces the selected mode.
 - The calendar and related-entry graph are derived from visible entries.
@@ -97,7 +97,7 @@ The feature becomes stronger because it is connected to the rest of the lifecycl
 
 Use this sentence in the submission or video:
 
-> My original contribution is a user-controlled AI privacy boundary: every journal entry can independently choose AI assistance or remain a Private Journal entry that never enters Gemini processing, while both paths retain the same ownership, integrity, audit, calendar, and deletion protections.
+> My original contribution is a user-controlled AI privacy boundary: every journal entry can independently choose AI assistance or remain a Private Journal entry that never enters Gemini processing. Private notes remain user-authored and hash-chained, while both paths retain the same ownership, integrity, audit, calendar, deletion, and retention protections.
 
 ## Accurate security boundary
 

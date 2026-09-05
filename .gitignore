@@ -31,6 +31,7 @@ docs/GITHUB_PUBLICATION_CHECKLIST.md
 docs/GITHUB_WEB_PUBLICATION_GUIDE.md
 docs/SELF_DEPLOYMENT_GUIDE.md
 docs/VIDEO_SUBMISSION_SCRIPT.md
+docs-private/
 
 # Credentials and private key material
 key.json

@@ -7,7 +7,7 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 ## Latest operator confirmation - 2026-09-04
 
 - [x] User-reported manual review confirms the current user-facing features and UI paths operate as designed.
-- [x] Automated browser smoke suite passes 5 tests: Privacy Guardian both decisions, individual deletion, integrity-count display, Calendar v1 responsive behavior, and AI Journal / Private Journal mode behavior.
+- [x] Automated browser smoke suite passes 6 tests: Privacy Guardian both decisions, individual deletion, integrity-count display, Calendar v1 responsive behavior including collapsed-card expansion, AI Journal / Private Journal mode behavior, and accordion scrolling.
 - [ ] External production gates remain separately tracked: Firebase Console registration confirmation, live App Check valid/missing/invalid-token evidence, controlled `entry_redacted` evidence, and final IAM review.
 
 - [x] Every input has a visible label (not just a placeholder) - user-verified 2026-09-04
@@ -42,14 +42,17 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 - [x] All-journal deletion removes entries and calendar markers while the audit trail remains - user-verified 2026-09-04
 - [x] Retained/deleted entries are not visible in the journal UI - user-verified 2026-09-04; browser-read denial remains an external security test
 - [x] AI Journal / Private Journal toggle is visible, accessible, and server-backed; Private Journal visibly explains that Gemini is not used - browser smoke verified 2026-09-05
+- [x] AI Journal exposes a 3,000-character entry and 1,500-character user-reply limit; Private Journal exposes a 4,000-character entry and 1,000-character private-note limit - browser smoke verified 2026-09-05
+- [x] Private Journal labels user-authored notes separately from Gemini replies and does not create a model response - browser smoke verified 2026-09-05
+- [x] Journal cards can collapse and expand with accessible arrow controls; long expanded bodies use a bounded scrollbar - browser smoke verified 2026-09-05
 - [ ] Production App Check allows the normal browser flow and rejects a missing/invalid app token
 
 ## AI processing choice - 2026-09-05
 
 - [x] The mode control starts in AI Journal for backward compatibility and exposes an explicit Private Journal option.
-- [x] Private Journal saves without opening Privacy Guardian, requesting Gemini, creating a conversation, or showing derived AI output in the smoke fixture.
+- [x] Private Journal saves without opening Privacy Guardian, requesting Gemini, creating a model turn, or showing derived AI output in the smoke fixture; its private-note control is clearly labeled.
 - [x] The server policy tests prove the browser choice is not trusted by itself: the authenticated preference is read and enforced by Express.
-- [ ] Manually verify preference persistence across sign-out/sign-in and verify a live private entry has `journalMode=private` and `aiUsed=false` without a conversation document.
+- [ ] Manually verify preference persistence across sign-out/sign-in and verify a live private entry has `journalMode=private` and `aiUsed=false`; before a note there is no conversation document, and after a note only user-authored turns exist.
 
 ## Modal polish pass — 2026-09-02
 
@@ -69,7 +72,7 @@ Use [EVALUATION_DOSSIER.md](EVALUATION_DOSSIER.md) for the full implementation i
 - [x] Firestore rules test resolves the root-level rules file after TypeScript compilation
 - [x] Firestore emulator cleanup cannot create a secondary failure when setup fails
 - [x] Fallback-attempt assertion matches the six-model ladder and three attempts per model
-- [x] Emulator-backed server suite passes: 41 passing, 2 intentionally pending
+- [x] Emulator-backed server suite passes: 44 passing, 2 intentionally pending
 
 ## Calendar runtime error triage — 2026-09-03
 

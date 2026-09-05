@@ -43,8 +43,8 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 - Google Sign-In through Firebase Authentication; the application does not handle passwords.
 - Popup sign-in with redirect fallback, persistent browser-local auth state through Firebase, and explicit sign-out.
 - Each authenticated account receives a Firebase user ID (`uid`) that is used as the ownership boundary for every user-scoped path.
-- User-controlled AI Journal / Private Journal mode is persisted per user; Private Journal saves the entry without any Gemini call or AI reply.
-- Entry input is trimmed and strictly limited to 8,000 characters; replies are strictly limited to 2,000 characters, with oversized requests rejected using HTTP 400.
+- User-controlled AI Journal / Private Journal mode is persisted per user; AI Journal uses Gemini replies, while Private Journal saves user-authored private notes without Gemini processing.
+- Mode-specific limits are enforced in the UI and server: AI entries 3,000 characters, AI replies 1,500 characters, Private Journal entries 4,000 characters, private notes 1,000 characters, and Gemini replies 1,000 characters. Oversized requests are rejected with HTTP 400.
 - Idempotent entry and reply requests use client-generated request IDs.
 - Multi-turn conversations scoped to one journal entry.
 - Server-side Privacy Guardian scanning for secrets and PII before every Gemini call, including replies.
@@ -71,8 +71,8 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 | --- | --- |
 | Google account sign-in | Firebase Authentication with Google Sign-In, popup flow, redirect fallback, persistent browser-local state, and explicit sign-out. |
 | Per-user identity | Firebase assigns a unique `uid`; API authorization and Firestore paths are derived from the verified token UID, never from a client-supplied owner field. |
-| AI processing choice | A server-enforced per-user preference lets new entries use the full Gemini flow or save as Private Journal entries without Gemini, token usage, summaries, categories, reflections, or replies. |
-| Input validation | Server-side text validation trims accepted input, rejects empty values, and rejects entries over 8,000 characters or replies over 2,000 characters before any Gemini or persistence work. |
+| AI processing choice | A server-enforced per-user preference lets new entries use the full Gemini flow or save as Private Journal entries without Gemini processing. Private entries can receive user-authored private notes, but never model replies. |
+| Input validation | Server-side mode-aware validation trims accepted input, rejects empty values, and rejects AI entries over 3,000, AI replies over 1,500, Private Journal entries over 4,000, or private notes over 1,000 characters before persistence or Gemini work. Gemini replies are bounded to 1,000 characters. |
 | App Check | Score-based reCAPTCHA Enterprise attestation is sent in `X-Firebase-AppCheck` and verified server-side on protected Express API routes. |
 | Storage segregation | Active entries, conversations, audit events, usage, hash-chain state, and backend-only retention records use separate `users/{uid}/...` paths. |
 | Privacy Guardian | Deterministic sensitive-content interception occurs before Gemini; the user chooses Redact before sending to Gemini or Send as-is anyway. |
@@ -216,9 +216,9 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 npx --yes firebase-tools@latest emulators:exec --only firestore,auth "npm test --prefix server"
 ```
 
-Current verified result: 38 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
+Current verified result: 44 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
 
-The browser smoke suite currently covers both Privacy Guardian decisions, individual deletion confirmation, Calendar v1 behavior including mobile overflow protection, and the AI Journal / Private Journal branch.
+The browser smoke suite currently covers both Privacy Guardian decisions, individual deletion confirmation, Calendar v1 behavior including selected-card expansion and mobile overflow protection, the AI Journal / Private Journal branch with mode-specific limits and private-note controls, and the journal-card accordion's bounded scrolling.
 
 The original nine-step manual verification run is recorded in [TEST_RESULTS.md](docs/TEST_RESULTS.md), followed by the expanded feature-by-feature manual matrix. It covers plain entry creation, replies, authentication persistence, Privacy Guardian interception on entries and replies, integrity verification, audit activity, category clustering, raw Firestore inspection, deletion, retention, App Check, deployment, and usability boundaries. The original nine recorded checks passed; later rows distinguish passed evidence from operator checks ready to run.
 
