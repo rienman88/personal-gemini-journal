@@ -6,7 +6,7 @@
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
 | Version 1 Capabilities and Features | [Personal Gemini Journal Full Version 1 Capabilities and Features](#current-capabilities) |
-| API surface, Security claims and honest limits | [View the API surface, route matrix, security claims and honest limitatations](docs/EVALUATION_DOSSIER.md#api-surface) |
+| API surface, Security claims and honest limits | [View the API surface, route matrix, security claims and honest limitations](docs/EVALUATION_DOSSIER.md#api-surface) |
 | Submission stack map | [Services, source evidence, checkbox selections, and demo proof](docs/SUBMISSION_STACK_MAP.md) |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
 | Threat model document| [Threat model](docs/THREAT_MODEL.md)|
