@@ -5,19 +5,11 @@
 | Canonical URL | https://personal-gemini-journal-eazyegerma-as.a.run.app |
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
 | Demonstration video | [Linkedin]() |
-| Version 1 Features | [Personal Gemini Journal Full Version 1 Features](#version-1-feature-inventory) |
+| Version 1 Capabilities and Features | [Personal Gemini Journal Full Version 1 Capabilities and Features](#current-capabilities) |
+| API surface, Security claims and honest limits | [View the API surface, route matrix, security claims and honest limitatations](docs/EVALUATION_DOSSIER.md#api-surface) |
 | Architecture diagrams | ![Journal Architecture](docs/ARCHITECTURE.svg) |
-| Threat model illustration | [Threat model](docs/THREAT_MODEL.md) with [visual boundary map](docs/THREAT_MODEL.svg) |
-| What is Personal Gemini Journal | [`How it works?`](docs/HOW_IT_WORKS.md) |
-| AI Studio Build | [`Special Instructions`](docs/CONSTITUTION.md) |
-| Docker | [`Docker Deployment`](docs/DOCKER_DEPLOYMENT_RUNBOOK.md) |
-| Implementation | [`IMPLEMENTATION GUIDE`](docs/IMPLEMENTATION_GUIDE.md) |
-| Usability checklist | [`Usability test`](docs/USABILITY_CHECKLIST.md) |
-| OWASP Top 10 LLM Coverage | [`OWASP Coverage`](docs/OWASP_LLM_TOP10_COVERAGE.md) |
-| Threat model | [`Security Threat Model`](docs/THREAT_MODEL.md) |
-| Technical reviewer | [`TECHNICAL WRITE-UP`](docs/TECHNICAL_WRITEUP.md) |
-| Manual Verification Checklist | [`TEST RESULTS`](docs/TEST_RESULTS.md) |
-
+| Threat model document| [Threat model](docs/THREAT_MODEL.md)|
+| Threat model illustration | ![visual boundary map](docs/THREAT_MODEL.svg) |
 ## Recommended Order
 | Order | Responsibility | Primary document | What to do |
 | --- | --- | --- | --- |
@@ -272,20 +264,3 @@ Firestore Security Rules isolate ordinary authenticated users from one another, 
 - Firebase Auth uses explicit browser-local persistence with no custom application session cookie. This is appropriate for a trusted personal computer; users should select Sign out on shared or public computers.
 - Automatic redaction is operational: the deployed retention index is ready and the daily scheduler created by `scripts/provision-cloud-run.ps1` successfully calls `POST /internal/retention/redact`. A controlled due-record transformation is still required as final evidence. `DELETION_HMAC_KEY` is required in production; the local fallback is development-only.
 
-## Documentation map
-
-- `docs/HOW_IT_WORKS.md` explains the user experience in plain language.
-- `docs/SETUP_DOCUMENT_MAP.md` is the canonical order for AI Studio, Docker, Firebase, Cloud Run, verification, GitHub, and video setup documents.
-- `docs/ARCHITECTURE.svg` is the source-controlled architecture image for the current application and deployment topology.
-- `docs/IMPLEMENTATION_GUIDE.md` maps the codelab requirements to local and external steps.
-- `docs/TECHNICAL_WRITEUP.md` documents the implementation and verification evidence.
-- `docs/CONSTITUTION.md` contains the Google AI Studio security instructions.
-- `docs/OWASP_LLM_TOP10_COVERAGE.md` records actual LLM security coverage and limits.
-- `docs/USABILITY_CHECKLIST.md` tracks manual usability work and browser smoke coverage.
-- The self-deployment guide and GitHub operator guides are intentionally local-only and are not required in the public repository.
-- GitHub publication procedures are intentionally kept private; use the public allowlist in `SETUP_DOCUMENT_MAP.md` and upload only reviewed source files.
-- `docs/TEST_RESULTS.md` records the original nine-step manual verification checklist, the expanded feature-by-feature manual test matrix, and system execution evidence.
-- `scripts/provision-cloud-run.ps1` provisions the production Cloud Run identity, App Check build/runtime settings, secrets, label, and retention scheduler.
-- `docs/DOCKER_DEPLOYMENT_RUNBOOK.md` records the actual Docker build, Cloud Run image release, verification, rollback, alternatives, and execution log.
-- `docs/CLOUD_IMPLEMENTATION_RUNBOOK.md` is the implementation-specific Google Cloud CLI, Firebase, Secret Manager, IAM, Cloud Build, Cloud Run, Scheduler, error-handling, and verification runbook with safe operator record templates.
-- `docs/EVALUATION_DOSSIER.md` is the single complete feature and evaluation brief for reviewers or another AI system.
