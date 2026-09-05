@@ -209,32 +209,15 @@ Full evidence and boundaries are in [TEST_RESULTS.md](TEST_RESULTS.md).
 
 - [ ] Accept Firebase terms and enable Google Sign-In in the target Firebase project.
 - [ ] Confirm the production score-based reCAPTCHA Enterprise key is registered to the Firebase Web app and its domains are correct.
-- [x] Create `GEMINI_API_KEY`, `DELETION_HMAC_KEY`, and `RETENTION_WORKER_TOKEN` in Secret Manager.
-- [x] Run `scripts/provision-cloud-run.ps1` with the protected `RETENTION_WORKER_TOKEN` and public Firebase build values.
-- [x] Record the Cloud Build image URI and digest.
-- [x] Verify the deployed revision uses the dedicated runtime service account and the image was built by the separate build service account.
-- [x] Verify the required `dev-tutorial=cloud-run-ai-challenge` Cloud Run label.
+- [ ] Create `GEMINI_API_KEY`, `DELETION_HMAC_KEY`, and `RETENTION_WORKER_TOKEN` in Secret Manager.
+- [ ] Run `scripts/provision-cloud-run.ps1` with the protected `RETENTION_WORKER_TOKEN` and public Firebase build values.
+- [ ] Record the Cloud Build image URI and digest.
+- [ ] Verify the deployed revision uses the dedicated runtime service account and the image was built by the separate build service account.
+- [ ] Verify the required `dev-tutorial=cloud-run-ai-challenge` Cloud Run label.
 - [ ] Verify normal App Check requests pass and missing/invalid App Check requests return `401`.
 - [ ] Trigger a controlled retention run and observe `entry_redacted`.
-- [x] Deploy and verify Firestore rules.
+- [ ] Deploy and verify Firestore rules.
 - [ ] Record the live Cloud Run URL, repository URL, and Academy submission evidence.
-
-## Documentation synchronization checklist
-
-- [x] README reflects the current feature set, architecture, local verification, deployment path, and limitations.
-- [x] HOW_IT_WORKS reflects authentication, App Check, entry/reply behavior, calendar, related entries, audit activity, deletion, retention, and failure states.
-- [x] IMPLEMENTATION_GUIDE and CLOUD_IMPLEMENTATION_RUNBOOK reflect Firebase, Secret Manager, Cloud Run identity, App Check registration, scheduler setup, and Academy submission steps.
-- [x] DOCKER_DEPLOYMENT_RUNBOOK records the actual Docker build, Cloud Run image deployment, runtime secret boundary, rollback, alternatives, errors, and execution checklist.
-- [x] Public documentation identifies the repository publication boundary and excludes local-only credential material; detailed GitHub operator procedures remain private.
-- [x] TECHNICAL_WRITEUP reflects current routes, middleware, data model, retention lifecycle, tests, and open production verification.
-- [x] CONSTITUTION preserves the current architecture and defines the feature/security contract for Google AI Studio.
-- [x] OWASP_LLM_TOP10_COVERAGE reflects current LLM controls, cross-cutting application controls, and honest limits.
-- [x] TEST_RESULTS records the original nine manual checks, the complete feature-by-feature manual matrix, automated evidence, App Check tests, deletion tests, and external checks still required.
-- [x] USABILITY_CHECKLIST covers the complete user-facing walkthrough and production usability/security checks.
-- [x] Relative Markdown links resolve across all thirteen root documentation files.
-- [x] Submission instructions identify Google Cloud Gen AI Academy APAC Cohort 3 rather than Devpost; historical nine-step results, retention semantics, and App Check gates are labeled accurately in the root documentation.
-- [x] `docs/ARCHITECTURE.svg` reflects the current Auth, App Check, Cloud Run, Gemini, Firestore, Secret Manager, Scheduler, and retention paths.
-- [x] Firebase Auth persistence is explicit browser-local persistence with no custom application session cookie; manual sign-out remains the user control for trusted-device sessions.
 
 ## Reviewer prompt
 

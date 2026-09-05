@@ -539,7 +539,6 @@ Review the output manually. Never rely only on a pattern scan. Check GitHub's re
 - Firestore IAM and access control: https://cloud.google.com/firestore/docs/security/iam
 - Cloud Audit Logs: https://cloud.google.com/logging/docs/audit
 - Google Cloud Policy Simulator: https://cloud.google.com/policy-intelligence/docs/simulate-policy
-- Hack2Skill APAC GenAI Academy Cohort 3: https://hack2skill.com/event/apac-genaiacademy?tab=cohort3
 
 ## Change Control
 
