@@ -35,7 +35,7 @@ For every security-sensitive feature, before calling it done: name the property 
 
 ## 6. Functional stability & walkthroughs
 - **Resilient model fallback ladder** — never depend on a single model. The current ladder is `gemini-3.6-flash` → `gemini-3.5-flash` → `gemini-3.5-flash-lite` → `gemini-3.1-flash-lite` → `gemini-flash-latest` → `gemini-3.7-flash`, advancing when a model fails. Structured analysis gets one initial attempt plus two schema retries per model; plain conversation replies get one attempt per model.
-- **Conversation output hygiene** — continuation guidance is sent as a Gemini system instruction, not as a fake user turn. Reject obvious drafting, reasoning, role-marker, and slash-command artifacts and advance to the next fallback model instead of persisting them as a reply.
+- **Conversation output hygiene** — continuation guidance is sent as a Gemini system instruction, not as a fake user turn. Reject obvious drafting, reasoning, role-marker, slash-command, and mid-thought artifacts and advance to the next fallback model instead of persisting them as a reply.
 - **Never fail silently on save** — if a write fails, show a clear error and preserve the user's input; never clear an input buffer before a write is confirmed
 - **Strict undefined-stripping** — never let an `undefined` field reach the Firestore driver; use `null` for "not available"
 - **Body-parser-before-routes ordering** — Express middleware order matters; JSON parsing and auth verification run before any route handler touches `req.body`

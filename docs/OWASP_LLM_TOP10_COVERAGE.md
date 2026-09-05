@@ -81,7 +81,7 @@ Private Journal is an additional user-controlled disclosure boundary: when the a
 - Per-user daily token budget: 50,000 tokens, including retries and failed model attempts.
 - Firebase App Check can reject scripted requests before the journal handler when enforcement is enabled; it is a secondary abuse signal, not a replacement for Firebase Auth.
 - The per-user AI Journal / Private Journal choice is enforced server-side. Private Journal avoids Gemini processing and token usage, while still using authenticated storage and request-rate controls.
-- Output tokens are bounded to 512 for analysis and 384 for replies.
+- Output tokens are bounded to 512 for analysis and 768 for replies; the user-visible Gemini reply remains capped at 1,000 characters and incomplete-looking output is rejected before persistence.
 - Inputs are trimmed and mode-aware: AI entries up to 3,000 characters, AI replies up to 1,500, Private Journal entries up to 4,000, and private notes up to 1,000. Gemini replies are capped at 1,000 characters; oversized requests are rejected with HTTP 400 before persistence or Gemini work.
 - Conversation context is capped at the latest ten turns.
 - Manual verification: Step 36 tests the request limiter; Step 37 tests the daily token budget; Step 50 tests final App Check enforcement; Step 54 checks the bounded scheduled worker batch.

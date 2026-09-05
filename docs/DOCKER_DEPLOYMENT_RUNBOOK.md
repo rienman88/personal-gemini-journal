@@ -36,7 +36,7 @@ This is the operational record for this repository. It describes the implementat
 - [ ] Root production build passes.
 - [ ] Browser smoke suite passes: 6 tests.
 - [ ] Browser smoke suite runs without inherited `NO_COLOR`/`FORCE_COLOR` warnings.
-- [x] Emulator-backed server suite passes: 45 passing, 2 intentionally pending on 2026-09-06.
+- [x] Emulator-backed server suite passes: 46 passing, 2 intentionally pending on 2026-09-06.
 - [ ] PowerShell provisioning script parses successfully.
 - [ ] Local Docker image builds successfully with Docker Desktop's Linux engine.
 - [ ] Local container smoke passes: `/healthz` returns HTTP 200 and the runtime image contains no key or environment files.

@@ -131,6 +131,18 @@ describe("Stability", () => {
       expect(isUsableConversationReply('/AI jargon. 5. **Final Polish:** "That')).to.equal(false);
     });
 
+    it("rejects a reply that stops mid-thought and falls back to the next model", async () => {
+      let calls = 0;
+      const caller = async () => {
+        calls += 1;
+        return calls === 1 ? "I couldn't agree more. This is your space, and" : "You can decide what feels most useful to explore next.";
+      };
+      const result = await continueConversation("fake-key", [{ role: "user", text: "I want to protect my writing." }], caller);
+      expect(result.ok).to.equal(true);
+      expect(calls).to.equal(2);
+      expect(isUsableConversationReply("I couldn't agree more. This is your space, and")).to.equal(false);
+    });
+
     it("bounds a long Gemini reply at a complete word or sentence", async () => {
       const result = await continueConversation(
         "fake-key",

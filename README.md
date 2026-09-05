@@ -53,7 +53,7 @@ For the complete evaluator-facing feature inventory, evidence matrix, architectu
 - RAW user text stored separately from clearly labeled DERIVED Gemini output.
 - Six-model Gemini fallback ladder with three bounded structured-output attempts per model, at most 18 structured attempts total.
 - Structured Gemini output includes a summary, up to five topics, one or two fixed categories, and a reflection question.
-- Conversation guidance uses Gemini's system-instruction field; obvious drafting or role-marker artifacts are rejected and sent through the existing fallback ladder instead of being stored as model replies.
+- Conversation guidance uses Gemini's system-instruction field; obvious drafting, role-marker, or mid-thought artifacts are rejected and sent through the existing fallback ladder instead of being stored as model replies.
 - Per-user request rate limiting, daily token budgets, input limits, and bounded conversation context.
 - Firestore-backed SHA-256 hash chains for entries and conversation turns, with server-side rehash/recalculation through the integrity-verification endpoint. The UI distinguishes total server records verified, entries pending retention redaction, and entries still visible in the journal.
 - Read-only security activity panel showing the signed-in user's recent audit events.
@@ -217,7 +217,7 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 npx --yes firebase-tools@latest emulators:exec --only firestore,auth "npm test --prefix server"
 ```
 
-Current verified result as of 2026-09-06: 45 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
+Current verified result as of 2026-09-06: 46 server tests pass and 2 are intentionally pending. The pending tests are the live Gemini authenticity check when `GEMINI_API_KEY_TEST` is absent and the route-level idempotency specification awaiting a full route harness. They are reported as pending, not counted as passing.
 
 The browser smoke suite currently covers both Privacy Guardian decisions, individual deletion confirmation, Calendar v1 behavior including selected-card expansion and mobile overflow protection, the AI Journal / Private Journal branch with mode-specific limits and private-note controls, and the journal-card accordion's bounded scrolling.
 

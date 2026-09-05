@@ -157,7 +157,7 @@ After the deadline, the worker retains the record but replaces `content`, `refle
 - Gemini never receives a secret or PII match when the user chooses the redaction action.
 - Private Journal entries never enter the Gemini or token-budget path; their per-entry mode fields make that provenance visible and durable.
 - Gemini output cannot authorize requests, execute tools, or write Firestore.
-- Conversation guidance is sent through Gemini's system-instruction field, and obvious drafting or role-marker artifacts are rejected before a reply is persisted; the existing fallback ladder then tries the next model.
+- Conversation guidance is sent through Gemini's system-instruction field, and obvious drafting, role-marker, or mid-thought artifacts are rejected before a reply is persisted; the existing fallback ladder then tries the next model.
 - A failed Gemini call does not discard the user's RAW entry or reply.
 - Hash-chain verification detects broken active content and preserves deleted chain linkage with tombstones.
 - App Check is fail-closed when explicitly enabled in production.
