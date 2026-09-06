@@ -4,7 +4,7 @@
 | --- | --- |
 | Canonical URL | https://personal-gemini-journal-eazyegerma-as.a.run.app |
 | Alternate URL | https://personal-gemini-journal-709422088585.asia-southeast1.run.app |
-| Demonstration video | [Linkedin]() |
+| Demonstration video | [Linkedin Demo Post](https://www.linkedin.com/feed/update/urn:li:activity:7502253270254682112/) |
 | Version 1 Capabilities and Features | [Personal Gemini Journal Full Version 1 Capabilities and Features](#current-capabilities) |
 | API surface, Security claims and honest limits | [View the API surface, route matrix, security claims and honest limitations](docs/EVALUATION_DOSSIER.md#api-surface) |
 | Submission stack map | [Services, source evidence, checkbox selections, and demo proof](docs/SUBMISSION_STACK_MAP.md) |
@@ -18,8 +18,9 @@
 | 1 | Requirements and current implementation | [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) | Follow the Google AI Studio, Firebase, local verification, and Academy requirements mapping. |
 | 2 | Setup Document | [SETUP_DOCUMENT_MAP.md](docs/SETUP_DOCUMENT_MAP.md) | navigation index for setting up, deploying, testing, publishing, and presenting Personal Gemini Journal. |
 | 3 | End-to-end operator flow | [CLOUD_IMPLEMENTATION_RUNBOOK.md](docs/CLOUD_IMPLEMENTATION_RUNBOOK.md) | Use the public-safe cloud runbook together with the Docker runbook as the linear deployment path for a new project. |
-| 4 | Verification evidence | [TEST_RESULTS.md](docs/TEST_RESULTS.md), [USABILITY_CHECKLIST.md](docs/USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](docs/OWASP_LLM_TOP10_COVERAGE.md) | Execute and record manual tests, browser smoke checks, OWASP coverage, and remaining external gates. |
-| 5 | Evaluation package | [EVALUATION_DOSSIER.md](docs/EVALUATION_DOSSIER.md), [TECHNICAL_WRITEUP.md](docs/TECHNICAL_WRITEUP.md), [HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) | Give reviewers the feature, architecture, data lifecycle, security boundary, and implementation explanation. |
+| 4 | Summary of features and Controls | [SUBMISSION STACK MAP](docs/SUBMISSION_STACK_MAP.md) | Screenshot of implementation for verification, attached |
+| 5 | Verification evidence | [TEST_RESULTS.md](docs/TEST_RESULTS.md), [USABILITY_CHECKLIST.md](docs/USABILITY_CHECKLIST.md), [OWASP_LLM_TOP10_COVERAGE.md](docs/OWASP_LLM_TOP10_COVERAGE.md) | Execute and record manual tests, browser smoke checks, OWASP coverage, and remaining external gates. |
+| 6 | Evaluation package | [EVALUATION_DOSSIER.md](docs/EVALUATION_DOSSIER.md), [TECHNICAL_WRITEUP.md](docs/TECHNICAL_WRITEUP.md), [HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) | Give reviewers the feature, architecture, data lifecycle, security boundary, and implementation explanation. |
 
 
 # Personal Gemini Journal
